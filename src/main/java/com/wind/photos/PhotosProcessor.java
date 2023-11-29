@@ -13,6 +13,7 @@ import com.google.photos.types.proto.Album;
 import com.google.photos.types.proto.MediaItem;
 import com.google.photos.types.proto.MediaMetadata;
 import com.google.photos.types.proto.VideoProcessingStatus;
+import com.google.protobuf.Timestamp;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.type.Date;
@@ -20,11 +21,16 @@ import com.wind.utube.UploadVideo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.AuthUtil;
+import util.DateTimeUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 public class PhotosProcessor {
@@ -100,6 +106,7 @@ public class PhotosProcessor {
             MediaMetadata metadata = mediaItem.getMediaMetadata();
             String fileName = mediaItem.getFilename();
             VideoProcessingStatus status = metadata.getVideo().getStatus();
+            LocalDateTime dateCreate = DateTimeUtil.protoTimeStamp2DateTime(metadata.getCreationTime());
 
             if (VideoProcessingStatus.READY.equals(status)) {
                 String mimeType = mediaItem.getMimeType();
@@ -107,6 +114,8 @@ public class PhotosProcessor {
 
                 VideoDto videoDto = new VideoDto(fileName, baseUrlDownload, mediaItem.getId());
                 videoDto.setMimeType(mimeType);
+                videoDto.setDateCreate(dateCreate);
+                videoDto.setProductUrl(mediaItem.getProductUrl());
                 videoDTOs.add(videoDto);
             } else logger.warn("Video {} is not ready. Current status: {}", fileName, status);
         }

@@ -31,10 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * <a href="https://github.com/youtube/api-samples/blob/master/java/src/main/java/com/google/api/services/samples/youtube/cmdline/data/UploadThumbnail.java">...</a>
@@ -67,7 +64,7 @@ public class UploadVideo {
      */
     public void upload(VideoDto videoDto) {
         try {
-            logger.info("{}: Start upload video {} .Time created: {}", Thread.currentThread().getId(), videoDto.getName(), new Date(videoDto.getCreateTime()));
+            logger.info("{}: Start upload video {} .Time created: {}", Thread.currentThread().getId(), videoDto.getName(), new Date(videoDto.getExpiredDownloadLink()));
 
             // Add extra information to the video before uploading.
             Video videoObjectDefiningMetadata = convertYoutubeVideo(videoDto);
@@ -82,7 +79,7 @@ public class UploadVideo {
             // information the API response should return. The second argument
             // is the video resource that contains metadata about the new video.
             // The third argument is the actual video content.
-            YouTube.Videos.Insert videoInsert = youTube.videos().insert("snippet,statistics,status", videoObjectDefiningMetadata, mediaContent);
+            YouTube.Videos.Insert videoInsert = youTube.videos().insert(Collections.singletonList("snippet,statistics,status"), videoObjectDefiningMetadata, mediaContent);
 
             // Set the upload type and add an event listener.
             MediaHttpUploader uploader = videoInsert.getMediaHttpUploader();

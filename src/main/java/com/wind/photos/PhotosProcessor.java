@@ -92,7 +92,7 @@ public class PhotosProcessor {
 
         // Create a new Filters object
         Filters filters = Filters.newBuilder()
-                .setDateFilter(dateFilter)
+//                .setDateFilter(dateFilter)
                 .setMediaTypeFilter(mediaType).build();
 
         // Sort results by oldest item first. Searching for items in chronological order only works with DateFilter.

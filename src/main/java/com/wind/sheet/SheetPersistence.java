@@ -36,14 +36,11 @@ public class SheetPersistence {
      * @throws IOException - if credentials file not found.
      */
     public Spreadsheet createSpreadsheet(String title) throws IOException {
-        // Create new spreadsheet with a title
         Spreadsheet spreadsheet = new Spreadsheet().setProperties(new SpreadsheetProperties().setTitle(title));
-        spreadsheet = sheetsService.spreadsheets().create(spreadsheet)
+        spreadsheet = sheetsService.spreadsheets()
+                .create(spreadsheet)
                 .setFields("spreadsheetId")
                 .execute();
-        // Prints the new spreadsheet id
-        logger.info("Find by ID {} ", googleSheetID);
-        logger.info("Spreadsheet ID: " + spreadsheet.getSpreadsheetId());
         return spreadsheet;
     }
 
@@ -58,6 +55,8 @@ public class SheetPersistence {
      * @param range  - Range of cells of the spreadsheet.
      * @param values - list of rows of values to input.
      * @throws IOException - if credentials file not found.
+     *                     The INSERT_ROWS option means that we want the data to be added to a new row,
+     *                     and not replace any existing data after the table
      */
     public void appendValues(String range,
                              List<List<Object>> values) throws IOException {
@@ -70,7 +69,7 @@ public class SheetPersistence {
                     .setValueInputOption("USER_ENTERED")
                     .setInsertDataOption("INSERT_ROWS")
                     .execute();
-            logger.info("{} cells appended.", result.getUpdates().getUpdatedCells());
+            logger.debug("{} cells appended.", result.getUpdates().getUpdatedCells());
         } catch (GoogleJsonResponseException e) {
             GoogleJsonError error = e.getDetails();
             if (error.getCode() == 404) {
@@ -78,7 +77,6 @@ public class SheetPersistence {
             } else
                 throw e;
         }
-
     }
 
     /**
@@ -86,22 +84,18 @@ public class SheetPersistence {
      * Sets values in a range of a spreadsheet.
      *
      * @param range            - Range of cells of the spreadsheet.
-     * @param valueInputOption - Determines how input data should be interpreted.
      * @param values           - List of rows of values to input.
      * @return spreadsheet with updated values
      * @throws IOException - if credentials file not found.
      */
     public UpdateValuesResponse updateValues(String range,
-                                             String valueInputOption,
-                                             List<List<Object>> values)
-            throws IOException {
-
+                                             List<List<Object>> values) throws IOException {
         UpdateValuesResponse result = null;
         try {
             ValueRange body = new ValueRange().setValues(values);
             result = sheetsService.spreadsheets().values()
                     .update(googleSheetID, range, body)
-                    .setValueInputOption(valueInputOption)
+                    .setValueInputOption("RAW")
                     .execute();
             logger.info("{} cells updated.", result.getUpdatedCells());
         } catch (GoogleJsonResponseException e) {
@@ -113,5 +107,18 @@ public class SheetPersistence {
             }
         }
         return result;
+    }
+
+    /**
+     * @param fromCell start cell position
+     * @param toCell   end cell position
+     * @return cell value
+     */
+    public BatchGetValuesResponse readValueRange(String fromCell, String toCell) throws IOException {
+        List<String> ranges = List.of(fromCell, toCell);
+        return sheetsService.spreadsheets().values()
+                .batchGet(googleSheetID)
+                .setRanges(ranges)
+                .execute();
     }
 }

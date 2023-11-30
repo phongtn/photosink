@@ -81,6 +81,14 @@ public class VideoDto {
 
     @Override
     public String toString() {
-        return "VideoDto{" + "name='" + name + '\'' + ", mimeType='" + mimeType + '\'' + ", urlDownload='" + urlDownload + '\'' + ", id='" + id + '\'' + ", createTime=" + linkExpiredMillis + '}';
+        return "VideoDto{" +
+                "name='" + name + '\'' +
+                ", mimeType='" + mimeType + '\'' +
+//                ", urlDownload='" + urlDownload + '\'' +
+//                ", productUrl='" + productUrl + '\'' +
+                ", id='" + id + '\'' +
+                ", linkExpiredMillis=" + linkExpiredMillis +
+                ", dateCreate=" + dateCreate +
+                '}';
     }
 }

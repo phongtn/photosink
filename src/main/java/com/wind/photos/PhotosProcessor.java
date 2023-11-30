@@ -13,11 +13,9 @@ import com.google.photos.types.proto.Album;
 import com.google.photos.types.proto.MediaItem;
 import com.google.photos.types.proto.MediaMetadata;
 import com.google.photos.types.proto.VideoProcessingStatus;
-import com.google.protobuf.Timestamp;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import com.google.type.Date;
-import com.wind.utube.UploadVideo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.AuthUtil;
@@ -27,22 +25,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class PhotosProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     private final PhotosLibraryClient photosLibraryClient;
-    private final UploadVideo videoUploader;
 
     @Inject
     public PhotosProcessor(AuthUtil authUtil) throws IOException {
         photosLibraryClient = authUtil.initPhotoClient();
-        videoUploader = new UploadVideo(authUtil.initYouTubeClient());
     }
 
     public void syncVideoToYoutube() {
@@ -89,14 +84,16 @@ public class PhotosProcessor {
 //        PhotosLibraryClient = PhotosLibraryClientFactory.createClient(GG_CREDENTIALS_PATH, REQUIRED_SCOPES);
         List<VideoDto> videoDTOs = new ArrayList<>();
 
-        Date day2023 = Date.newBuilder().setMonth(10).setDay(28).setYear(2023).build();
+        Date day2023 = Date.newBuilder().setMonth(11).setDay(4).setYear(2023).build();
         DateFilter dateFilter = DateFilter.newBuilder().addDates(day2023).build();
 
         // Create a new MediaTypeFilter for Video media items
         MediaTypeFilter mediaType = MediaTypeFilter.newBuilder().addMediaTypes(MediaTypeFilter.MediaType.VIDEO).build();
 
         // Create a new Filters object
-        Filters filters = Filters.newBuilder().setDateFilter(dateFilter).setMediaTypeFilter(mediaType).build();
+        Filters filters = Filters.newBuilder()
+                .setDateFilter(dateFilter)
+                .setMediaTypeFilter(mediaType).build();
 
         // Sort results by oldest item first. Searching for items in chronological order only works with DateFilter.
         final OrderBy newestFirstOrder = OrderBy.MEDIAMETADATA_CREATION_TIME;

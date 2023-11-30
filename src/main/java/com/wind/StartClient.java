@@ -31,6 +31,8 @@ public class StartClient {
         SheetPersistence sheetPersistence = injector.getInstance(SheetPersistence.class);
 
         List<VideoDto> videoDtoList = photosProcessor.filterVideo();
+        videoDtoList.forEach(videoDto -> logger.info("{}", videoDto));
+        logger.info("We got total {} video", videoDtoList.size());
 //        String range = "Sheet1!A1:C1";
 //        String valueInputOption = "RAW";
 //        List<Object> content = List.of("Title1", "URL1", "Status1   ");

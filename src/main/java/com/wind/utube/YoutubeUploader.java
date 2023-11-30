@@ -24,9 +24,11 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
+import com.google.inject.Inject;
 import com.wind.photos.VideoDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.AuthUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +43,7 @@ import java.util.*;
  *
  * @author Jeremy Walker
  */
-public class UploadVideo {
+public class YoutubeUploader {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -53,8 +55,9 @@ public class UploadVideo {
 
     private final YouTube youTube;
 
-    public UploadVideo(YouTube youTube) {
-        this.youTube = youTube;
+    @Inject
+    public YoutubeUploader(AuthUtil authUtil) {
+        this.youTube = authUtil.initYouTubeClient();
     }
 
     /**
@@ -62,10 +65,9 @@ public class UploadVideo {
      * looks for the video in the application's project folder and uses OAuth
      * 2.0 to authorize the API request.
      */
-    public void upload(VideoDto videoDto) {
+    public String upload(VideoDto videoDto) {
+        String videoLink = "https://www.youtube.com/watch?v=";
         try {
-            logger.info("{}: Start upload video {} .Time created: {}", Thread.currentThread().getId(), videoDto.getName(), new Date(videoDto.getExpiredDownloadLink()));
-
             // Add extra information to the video before uploading.
             Video videoObjectDefiningMetadata = convertYoutubeVideo(videoDto);
 
@@ -79,7 +81,9 @@ public class UploadVideo {
             // information the API response should return. The second argument
             // is the video resource that contains metadata about the new video.
             // The third argument is the actual video content.
-            YouTube.Videos.Insert videoInsert = youTube.videos().insert(Collections.singletonList("snippet,statistics,status"), videoObjectDefiningMetadata, mediaContent);
+            YouTube.Videos.Insert videoInsert = youTube.videos().insert(
+                    Collections.singletonList("snippet,statistics,status"),
+                    videoObjectDefiningMetadata, mediaContent);
 
             // Set the upload type and add an event listener.
             MediaHttpUploader uploader = videoInsert.getMediaHttpUploader();
@@ -119,6 +123,7 @@ public class UploadVideo {
             logger.info("  - Privacy Status: " + returnedVideo.getStatus().getPrivacyStatus());
             logger.info("  - Video Count: " + returnedVideo.getStatistics().getViewCount());
 
+            videoLink = videoLink + returnedVideo.getId();
         } catch (GoogleJsonResponseException e) {
             GoogleJsonError jsonError = e.getDetails();
             logger.error("GoogleJsonResponseException code: " + jsonError.getCode() + " : " + jsonError.getMessage(), e);
@@ -127,6 +132,7 @@ public class UploadVideo {
         } catch (Throwable t) {
             logger.error("Throwable: " + t.getMessage(), t);
         }
+        return videoLink;
     }
 
     private static Video convertYoutubeVideo(VideoDto videoDto) {

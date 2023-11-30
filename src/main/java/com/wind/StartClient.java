@@ -5,6 +5,8 @@ import com.google.inject.Injector;
 import com.google.inject.name.Named;
 import com.wind.photos.PhotosProcessor;
 import com.wind.photos.VideoDto;
+import com.wind.service.DataService;
+import com.wind.service.PhotoSyncService;
 import com.wind.sheet.SheetPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class StartClient {
 
@@ -27,24 +30,8 @@ public class StartClient {
         Injector injector = Guice.createInjector(
                 new GoogleAPIMaterial(),
                 new ConfigModule());
-        PhotosProcessor photosProcessor = injector.getInstance(PhotosProcessor.class);
-        SheetPersistence sheetPersistence = injector.getInstance(SheetPersistence.class);
-
-        List<VideoDto> videoDtoList = photosProcessor.filterVideo();
-        videoDtoList.forEach(videoDto -> logger.info("{}", videoDto));
-        logger.info("We got total {} video", videoDtoList.size());
-//        String range = "Sheet1!A1:C1";
-//        String valueInputOption = "RAW";
-//        List<Object> content = List.of("Title1", "URL1", "Status1   ");
-        List<List<Object>> value = new ArrayList<>(videoDtoList.size());
-        videoDtoList.forEach(video -> value.add(List.of(
-                video.getId(),
-                video.getName(),
-                video.getProductUrl(),
-                video.getDateCreate().toString())));
-
-//        sheetPersistence.updateValues("A1", valueInputOption, value);
-        sheetPersistence.appendValues("A1", value);
+        PhotoSyncService syncService = injector.getInstance(PhotoSyncService.class);
+        syncService.pushVideoYoutube();
     }
 }
 

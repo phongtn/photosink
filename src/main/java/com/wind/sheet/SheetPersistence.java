@@ -12,13 +12,11 @@ import org.slf4j.LoggerFactory;
 import util.AuthUtil;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class SheetPersistence {
 
-    private static final Logger logger = LoggerFactory.getLogger(StartClient.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SheetPersistence.class.getName());
 
     private final AuthUtil authUtil;
     private final String googleSheetID;
@@ -81,6 +79,43 @@ public class SheetPersistence {
         }
     }
 
+
+    public BatchUpdateValuesResponse updateBatchValue(Map<String, String> mapValue) throws IOException {
+        List<ValueRange> data = new ArrayList<>();
+        mapValue.forEach((cellPosition, cellValue) -> {
+            List<List<Object>> bodyValue = new ArrayList<>();
+            bodyValue.add(List.of(cellValue));
+            data.add(new ValueRange().setRange(cellPosition).setValues(bodyValue));
+        });
+
+        BatchUpdateValuesResponse result = null;
+        try {
+            BatchUpdateValuesRequest body = new BatchUpdateValuesRequest()
+                    .setValueInputOption("RAW")
+                    .setData(data);
+            result = sheetsService.spreadsheets().values().batchUpdate(googleSheetID, body).execute();
+            logger.debug("{} cells updated.", result.getTotalUpdatedCells());
+        } catch (GoogleJsonResponseException e) {
+            GoogleJsonError error = e.getDetails();
+            if (error.getCode() == 404) {
+                logger.error("Spreadsheet not found with id {}", googleSheetID);
+            } else {
+                throw e;
+            }
+        }
+        return result;
+    }
+
+    public void updateCellValue(String cellPosition, String cellValue) {
+        List<List<Object>> bodyValue = new ArrayList<>();
+        bodyValue.add(List.of(cellValue));
+        try {
+            this.updateValues(cellPosition, bodyValue);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * <a href="https://developers.google.com/sheets/api/samples/writing">Basic writing</a>
      * Sets values in a range of a spreadsheet.
@@ -122,7 +157,7 @@ public class SheetPersistence {
     /**
      * @return list value by major dimension ROWS or COLUMNS
      */
-    private List<ValueRange> readValueRangeDimension(String dimension, String... ranges) throws IOException {
+    public List<ValueRange> readValueRangeDimension(String dimension, String... ranges) throws IOException {
         return sheetsService.spreadsheets().values()
                 .batchGet(googleSheetID)
                 .setMajorDimension(Optional.ofNullable(dimension).orElse("ROWS"))

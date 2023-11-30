@@ -40,19 +40,6 @@ public class PhotosProcessor {
         photosLibraryClient = authUtil.initPhotoClient();
     }
 
-    public void syncVideoToYoutube() {
-        List<VideoDto> videoDtoList = this.filterVideo();
-        logger.info("Got {} video", videoDtoList.size());
-        try {
-            List<String> mediaItemIDs = videoDtoList.stream().map(VideoDto::getId).toList();
-//            logger.info("Now, we sleep ten seconds before stream to utube");
-//            Thread.sleep(1 * 1000);
-//            videoDtoList.parallelStream().forEach(videoUploader::upload);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void addMediaItemToAlbum(String albumId, List<String> mediaItemIds) {
         try {
             Objects.requireNonNull(albumId, "The Album ID can't null");
@@ -76,6 +63,18 @@ public class PhotosProcessor {
         return photosLibraryClient.createAlbum("utube-moved");
     }
 
+    public VideoDto getVideo(String videoID) {
+        MediaItem mediaItem = photosLibraryClient.getMediaItem(videoID);
+        if (mediaItem != null) {
+            MediaMetadata metadata = mediaItem.getMediaMetadata();
+            String fileName = mediaItem.getFilename();
+            String baseUrlDownload = mediaItem.getBaseUrl() + "=dv";
+            VideoDto videoDto = new VideoDto(fileName, baseUrlDownload, videoID);
+            videoDto.setMimeType(mediaItem.getMimeType());
+            return videoDto;
+        }
+        return null;
+    }
 
     /**
      * <a href="https://developers.google.com/photos/library/guides/apply-filters">...</a>
@@ -96,7 +95,7 @@ public class PhotosProcessor {
                 .setMediaTypeFilter(mediaType).build();
 
         // Sort results by oldest item first. Searching for items in chronological order only works with DateFilter.
-        final OrderBy newestFirstOrder = OrderBy.MEDIAMETADATA_CREATION_TIME;
+//        final OrderBy newestFirstOrder = OrderBy.MEDIAMETADATA_CREATION_TIME;
         InternalPhotosLibraryClient.SearchMediaItemsPagedResponse searchResponse = photosLibraryClient.searchMediaItems(filters);
 
         for (MediaItem mediaItem : searchResponse.iterateAll()) {

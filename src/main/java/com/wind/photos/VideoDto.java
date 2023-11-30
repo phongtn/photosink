@@ -84,7 +84,7 @@ public class VideoDto {
         return "VideoDto{" +
                 "name='" + name + '\'' +
                 ", mimeType='" + mimeType + '\'' +
-//                ", urlDownload='" + urlDownload + '\'' +
+                ", urlDownload='" + urlDownload + '\'' +
 //                ", productUrl='" + productUrl + '\'' +
                 ", id='" + id + '\'' +
                 ", linkExpiredMillis=" + linkExpiredMillis +

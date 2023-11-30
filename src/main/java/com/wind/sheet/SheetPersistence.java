@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import util.AuthUtil;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class SheetPersistence {
 
@@ -83,8 +85,8 @@ public class SheetPersistence {
      * <a href="https://developers.google.com/sheets/api/samples/writing">Basic writing</a>
      * Sets values in a range of a spreadsheet.
      *
-     * @param range            - Range of cells of the spreadsheet.
-     * @param values           - List of rows of values to input.
+     * @param range  - Range of cells of the spreadsheet.
+     * @param values - List of rows of values to input.
      * @return spreadsheet with updated values
      * @throws IOException - if credentials file not found.
      */
@@ -109,16 +111,23 @@ public class SheetPersistence {
         return result;
     }
 
+    public List<ValueRange> readSpecificCellValue(String cellPosition) throws IOException {
+        return this.readValueRange(cellPosition);
+    }
+
+    public List<ValueRange> readValueRange(String... ranges) throws IOException {
+        return this.readValueRangeDimension(null, ranges);
+    }
+
     /**
-     * @param fromCell start cell position
-     * @param toCell   end cell position
-     * @return cell value
+     * @return list value by major dimension ROWS or COLUMNS
      */
-    public BatchGetValuesResponse readValueRange(String fromCell, String toCell) throws IOException {
-        List<String> ranges = List.of(fromCell, toCell);
+    private List<ValueRange> readValueRangeDimension(String dimension, String... ranges) throws IOException {
         return sheetsService.spreadsheets().values()
                 .batchGet(googleSheetID)
-                .setRanges(ranges)
-                .execute();
+                .setMajorDimension(Optional.ofNullable(dimension).orElse("ROWS"))
+                .setRanges(Arrays.asList(ranges))
+                .execute().getValueRanges();
     }
+
 }

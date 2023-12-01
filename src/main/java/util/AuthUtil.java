@@ -130,7 +130,9 @@ public class AuthUtil {
 
         // Build the local server and bind it to port 8080
         int LOCAL_PORT_BINDING = 8080;
-        LocalServerReceiver localReceiver = new LocalServerReceiver.Builder().setPort(LOCAL_PORT_BINDING).build();
+        LocalServerReceiver localReceiver = new LocalServerReceiver.Builder()
+
+                .setPort(LOCAL_PORT_BINDING).build();
         return new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
     }
 }

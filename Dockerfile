@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 amazoncorretto:17-alpine
+FROM amazoncorretto:17-alpine
 ENV TZ=Asia/Ho_Chi_Minh
 
 LABEL author="phongtn.group1@gmail.com"
@@ -12,4 +12,4 @@ RUN tar xf /dis.tar -C /app --strip-components=1
 RUN ls -la
 
 CMD /app/bin/GooglePhotoBackup
-EXPOSE 8081
+EXPOSE 8080

@@ -24,12 +24,11 @@ public class StartServer {
                 new GoogleAPIMaterial(),
                 new ConfigModule(),
                 new ServiceModule());
-        PhotoSyncService syncService = injector.getInstance(PhotoSyncService.class);
-        PhotoService photoService = injector.getInstance(PhotoService.class);
 
-        var app = create(cfg -> cfg.routing.contextPath = "/ptube").start(8081);
+        var app = create(cfg -> cfg.routing.contextPath = "/ptube").start(8080);
         app.get("/", ctx -> ctx.json("Hello, is it me you're looking for"));
         app.get("/video", ctx -> {
+            PhotoService photoService = injector.getInstance(PhotoService.class);
             int year = Integer.parseInt(Objects.requireNonNull(ctx.queryParam("y")));
             int month = Integer.parseInt(Objects.requireNonNull(ctx.queryParam("m")));
             int day = Integer.parseInt(Objects.requireNonNull(ctx.queryParam("d")));
@@ -37,10 +36,12 @@ public class StartServer {
             ctx.json(video).status(HttpStatus.OK);
         });
         app.get("/sync/photos", ctx -> {
+            PhotoSyncService syncService = injector.getInstance(PhotoSyncService.class);
             syncService.pullVideoToday();
             ctx.result("Success").status(HttpStatus.OK);
         });
         app.get("/sync/utube", ctx -> {
+            PhotoSyncService syncService = injector.getInstance(PhotoSyncService.class);
             syncService.pushVideoYoutube();
             ctx.result("Success").status(HttpStatus.OK);
         });

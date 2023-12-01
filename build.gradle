@@ -27,6 +27,7 @@ dependencies {
     implementation('com.google.api-client:google-api-client:2.2.0') {
         exclude group: 'com.google.guava', module: 'guava-jdk5'
     }
+    implementation("io.javalin:javalin:5.6.3")
     testImplementation 'junit:junit:4.13.2'
 
 

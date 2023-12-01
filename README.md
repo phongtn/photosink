@@ -61,7 +61,7 @@ docker build -t ptube:1.0 .
 ```
 
 ```shell
-docker run --rm -it -p 8081:8081 ptube:1.0
+docker run --rm -it -p 8081:8081 -p 8080:8080 ptube:1.0
 
 ```
 

@@ -5,7 +5,6 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
 import com.google.inject.name.Named;
-import com.wind.StartClient;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +78,19 @@ public class SheetPersistence {
         }
     }
 
+
+    public AppendValuesResponse appendData(ValueRange appendBody) throws IOException {
+        AppendValuesResponse appendResult = sheetsService.spreadsheets().values()
+                .append(googleSheetID, "A1", appendBody)
+                .setValueInputOption("USER_ENTERED")
+                .setInsertDataOption("INSERT_ROWS")
+                .setIncludeValuesInResponse(true)
+                .execute();
+
+        ValueRange total = appendResult.getUpdates().getUpdatedData();
+        logger.info("Data write: {}", total);
+        return appendResult;
+    }
 
     public BatchUpdateValuesResponse updateBatchValue(Map<String, String> mapValue) throws IOException {
         List<ValueRange> data = new ArrayList<>();

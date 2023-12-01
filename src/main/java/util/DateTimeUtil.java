@@ -7,7 +7,11 @@ import java.time.*;
 
 public class DateTimeUtil {
 
-    static final String ZONE_ID = "Asia/Ho_Chi_Minh";
+    public static final String ZONE_ID = "Asia/Ho_Chi_Minh";
+
+    public static LocalDate now() {
+        return LocalDate.now(ZoneId.of(ZONE_ID));
+    }
 
     public static LocalDateTime protoTimeStamp2DateTime(Timestamp timestamp) {
         return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos())
@@ -15,18 +19,19 @@ public class DateTimeUtil {
                 .toLocalDateTime();
     }
 
-    protected static Timestamp toGoogleTimestampUTC(final LocalDateTime localDateTime) {
+    public static Timestamp toGoogleTimestampUTC(final LocalDateTime localDateTime) {
         return Timestamp.newBuilder()
                 .setSeconds(localDateTime.toEpochSecond(ZoneOffset.of(ZONE_ID)))
                 .setNanos(localDateTime.getNano())
                 .build();
     }
 
-    protected static Date toGoogleDate(final LocalDate localDate) {
+    public static Date toGoogleDate(final LocalDate localDate) {
         return Date.newBuilder()
                 .setYear(localDate.getYear())
                 .setMonth(localDate.getMonth().getValue())
                 .setDay(localDate.getDayOfMonth())
                 .build();
     }
+
 }

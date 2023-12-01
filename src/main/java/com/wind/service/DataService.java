@@ -1,12 +1,15 @@
 package com.wind.service;
 
+import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.wind.photos.VideoDto;
 import com.wind.sheet.SheetPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,5 +60,16 @@ public class DataService {
         sheetPersistence.updateCellValue(COL_LABEL_STATUS + rowIndex, "DONE");
         sheetPersistence.updateCellValue(COL_LABEL_UTUBE_LINK + rowIndex, youtubeLink);
         logger.info("The row index {} update succeeded.", rowIndex);
+    }
+
+    public void insertVideo(VideoDto videoDto) throws IOException {
+        List<Object> row = List.of(
+                videoDto.getId(),
+                videoDto.getName(),
+                videoDto.getProductUrl(),
+                videoDto.getDateCreate().toString());
+        ValueRange body = new ValueRange()
+                .setValues(List.of(row));
+        sheetPersistence.appendData(body);
     }
 }

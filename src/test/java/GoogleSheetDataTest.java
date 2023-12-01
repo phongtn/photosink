@@ -1,3 +1,4 @@
+import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.inject.Guice;
@@ -11,7 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -76,5 +80,14 @@ public class GoogleSheetDataTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void whenInsertNewRowToSheet() throws IOException {
+        ValueRange body = new ValueRange()
+                .setValues(List.of(List.of("video-id", "vide-name", "url-download", LocalDateTime.now().toString())));
+        AppendValuesResponse appendValuesResponse = sheetServiceData.appendData(body);
+        ValueRange rowInserted = appendValuesResponse.getUpdates().getUpdatedData();
+        assertThat("video-id", equalTo(rowInserted.getValues().get(0).get(0)));
     }
 }

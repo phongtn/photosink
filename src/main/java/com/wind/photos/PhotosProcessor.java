@@ -8,14 +8,12 @@ import com.google.photos.library.v1.proto.*;
 import com.google.photos.library.v1.upload.UploadMediaItemRequest;
 import com.google.photos.library.v1.upload.UploadMediaItemResponse;
 import com.google.photos.library.v1.util.NewMediaItemFactory;
-import com.google.photos.library.v1.util.OrderBy;
 import com.google.photos.types.proto.Album;
 import com.google.photos.types.proto.MediaItem;
 import com.google.photos.types.proto.MediaMetadata;
 import com.google.photos.types.proto.VideoProcessingStatus;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import com.google.type.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.AuthUtil;
@@ -25,12 +23,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-public class PhotosProcessor {
+public class PhotosProcessor implements PhotoService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     private final PhotosLibraryClient photosLibraryClient;
@@ -40,29 +40,7 @@ public class PhotosProcessor {
         photosLibraryClient = authUtil.initPhotoClient();
     }
 
-    public void addMediaItemToAlbum(String albumId, List<String> mediaItemIds) {
-        try {
-            Objects.requireNonNull(albumId, "The Album ID can't null");
-            // Add all given media items to the album
-            BatchAddMediaItemsToAlbumResponse response = photosLibraryClient.batchAddMediaItemsToAlbum(albumId, mediaItemIds);
-            logger.info("move result {}", response.toString());
-
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-
-    /**
-     * Currently Google API doesn't support delete action via API.
-     * We will be created a default album to add the video into this album.
-     * Then we can manually delete these items using Google Photos application or browser.
-     */
-    public Album getVideoAlbum() {
-//        GetAlbumRequest getAlbumRequest = GetAlbumRequest.newBuilder().set
-        return photosLibraryClient.createAlbum("utube-moved");
-    }
-
+    @Override
     public VideoDto getVideo(String videoID) {
         MediaItem mediaItem = photosLibraryClient.getMediaItem(videoID);
         if (mediaItem != null) {
@@ -76,27 +54,41 @@ public class PhotosProcessor {
         return null;
     }
 
+    @Override
+    public List<VideoDto> getAllVideo() {
+        MediaTypeFilter mediaType = MediaTypeFilter.newBuilder().
+                addMediaTypes(MediaTypeFilter.MediaType.VIDEO).build();
+        Filters filters = Filters.newBuilder()
+                .setMediaTypeFilter(mediaType)
+                .build();
+        return this.filterVideo(filters);
+    }
+
+    @Override
+    public List<VideoDto> getVideos(LocalDate date) {
+        LocalDate requestDate = Optional.ofNullable(date).orElse(DateTimeUtil.now());
+        DateFilter dateFilter = DateFilter.newBuilder()
+                .addDates(DateTimeUtil.toGoogleDate(requestDate))
+                .build();
+
+        MediaTypeFilter mediaType = MediaTypeFilter.newBuilder().
+                addMediaTypes(MediaTypeFilter.MediaType.VIDEO).build();
+
+        Filters filters = Filters.newBuilder()
+                .setDateFilter(dateFilter)
+                .setMediaTypeFilter(mediaType)
+                .build();
+        return this.filterVideo(filters);
+    }
+
     /**
      * <a href="https://developers.google.com/photos/library/guides/apply-filters">...</a>
      */
-    public List<VideoDto> filterVideo() {
-//        PhotosLibraryClient = PhotosLibraryClientFactory.createClient(GG_CREDENTIALS_PATH, REQUIRED_SCOPES);
+    private List<VideoDto> filterVideo(Filters filters) {
         List<VideoDto> videoDTOs = new ArrayList<>();
 
-        Date day2023 = Date.newBuilder().setMonth(11).setDay(4).setYear(2023).build();
-        DateFilter dateFilter = DateFilter.newBuilder().addDates(day2023).build();
-
-        // Create a new MediaTypeFilter for Video media items
-        MediaTypeFilter mediaType = MediaTypeFilter.newBuilder().addMediaTypes(MediaTypeFilter.MediaType.VIDEO).build();
-
-        // Create a new Filters object
-        Filters filters = Filters.newBuilder()
-//                .setDateFilter(dateFilter)
-                .setMediaTypeFilter(mediaType).build();
-
-        // Sort results by oldest item first. Searching for items in chronological order only works with DateFilter.
-//        final OrderBy newestFirstOrder = OrderBy.MEDIAMETADATA_CREATION_TIME;
-        InternalPhotosLibraryClient.SearchMediaItemsPagedResponse searchResponse = photosLibraryClient.searchMediaItems(filters);
+        InternalPhotosLibraryClient.SearchMediaItemsPagedResponse searchResponse =
+                photosLibraryClient.searchMediaItems(filters);
 
         for (MediaItem mediaItem : searchResponse.iterateAll()) {
             MediaMetadata metadata = mediaItem.getMediaMetadata();
@@ -115,6 +107,7 @@ public class PhotosProcessor {
                 videoDTOs.add(videoDto);
             } else logger.warn("Video {} is not ready. Current status: {}", fileName, status);
         }
+        logger.info("we found {} videos on filter {}", videoDTOs.size(), filters.getContentFilter());
         return videoDTOs;
     }
 
@@ -167,5 +160,27 @@ public class PhotosProcessor {
             logger.error(e.getMessage(), e);
         }
         return null;
+    }
+
+    public void addMediaItemToAlbum(String albumId, List<String> mediaItemIds) {
+        try {
+            Objects.requireNonNull(albumId, "The Album ID can't null");
+            // Add all given media items to the album
+            BatchAddMediaItemsToAlbumResponse response = photosLibraryClient.batchAddMediaItemsToAlbum(albumId, mediaItemIds);
+            logger.info("move result {}", response.toString());
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Currently Google API doesn't support delete action via API.
+     * We will be created a default album to add the video into this album.
+     * Then we can manually delete these items using Google Photos application or browser.
+     */
+    public Album getVideoAlbum() {
+//        GetAlbumRequest getAlbumRequest = GetAlbumRequest.newBuilder().set
+        return photosLibraryClient.createAlbum("utube-moved");
     }
 }

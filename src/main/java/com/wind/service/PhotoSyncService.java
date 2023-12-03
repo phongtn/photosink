@@ -43,9 +43,9 @@ public class PhotoSyncService {
         Map<Integer, String> videoData = dataService.pullData(LIMIT_YOUTUBE_UPLOAD_QUOTAS);
         videoData.forEach((rowId, videoID) -> {
             VideoDto videoDto = photoService.getVideo(videoID);
-//            String videoLink = youtubeUploader.upload(videoDto);
-//            dataService.updateStatus(rowId, videoLink);//
-            dataService.updateStatus(rowId, "http://testing");
+            String videoLink = youtubeUploader.upload(videoDto);
+            dataService.updateStatus(rowId, videoLink);
+//            dataService.updateStatus(rowId, "http://testing");
         });
     }
 }

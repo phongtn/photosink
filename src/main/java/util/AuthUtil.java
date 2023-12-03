@@ -2,6 +2,7 @@ package util;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
+import com.google.api.client.extensions.java6.auth.oauth2.VerificationCodeReceiver;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
@@ -40,6 +41,7 @@ public class AuthUtil {
     private final UserCredentials userCredentials;
     private final List<String> REQUIRED_SCOPES;
     private final String APPLICATION_NAME = "photos-2utube";
+    private final VerificationCodeReceiver verificationCodeReceiver;
 
     {
         REQUIRED_SCOPES = ImmutableList.of(
@@ -54,9 +56,10 @@ public class AuthUtil {
     private final Credential credential;
 
     @Inject
-    public AuthUtil(JsonFactory jsonFactory, HttpTransport httpTransport) {
+    public AuthUtil(JsonFactory jsonFactory, HttpTransport httpTransport, VerificationCodeReceiver verificationCodeReceiver) {
         JSON_FACTORY = jsonFactory;
         this.httpTransport = httpTransport;
+        this.verificationCodeReceiver = verificationCodeReceiver;
 
         try {
             credential = authorize(REQUIRED_SCOPES);
@@ -131,8 +134,7 @@ public class AuthUtil {
         // Build the local server and bind it to port 8080
         int LOCAL_PORT_BINDING = 8080;
         LocalServerReceiver localReceiver = new LocalServerReceiver.Builder()
-
                 .setPort(LOCAL_PORT_BINDING).build();
-        return new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
+        return new AuthorizationCodeInstalledApp(flow, verificationCodeReceiver).authorize("user");
     }
 }

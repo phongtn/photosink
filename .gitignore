@@ -52,3 +52,5 @@ src/main/resources/*.json
 
 gradlew
 gradlew.bat
+
+oauth-credentials

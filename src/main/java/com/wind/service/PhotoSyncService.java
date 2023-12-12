@@ -21,7 +21,7 @@ public class PhotoSyncService {
     private final PhotoService photoService;
     private final YoutubeUploader youtubeUploader;
 
-    private final int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 3;
+    private final int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 1;
 
     @Inject
     public PhotoSyncService(DataService dataService,

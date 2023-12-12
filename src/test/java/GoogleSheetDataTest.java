@@ -3,8 +3,8 @@ import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.wind.ConfigModule;
-import com.wind.GoogleAPIMaterial;
+import com.wind.module.ConfigModule;
+import com.wind.module.GoogleAPIMaterial;
 import com.wind.sheet.SheetPersistence;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,10 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;

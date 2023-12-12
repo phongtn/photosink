@@ -51,6 +51,7 @@ public class PhotosProcessor implements PhotoService {
             videoDto.setMimeType(mediaItem.getMimeType());
             return videoDto;
         }
+        photosLibraryClient.close();
         return null;
     }
 
@@ -108,6 +109,7 @@ public class PhotosProcessor implements PhotoService {
             } else logger.warn("Video {} is not ready. Current status: {}", fileName, status);
         }
         logger.info("we found {} videos on filter {}", videoDTOs.size(), filters.getContentFilter());
+        photosLibraryClient.close();
         return videoDTOs;
     }
 

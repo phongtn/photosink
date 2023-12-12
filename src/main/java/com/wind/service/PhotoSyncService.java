@@ -21,8 +21,6 @@ public class PhotoSyncService {
     private final PhotoService photoService;
     private final YoutubeUploader youtubeUploader;
 
-    private final int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 1;
-
     @Inject
     public PhotoSyncService(DataService dataService,
                             PhotosProcessor photoService,
@@ -40,12 +38,12 @@ public class PhotoSyncService {
     }
 
     public void pushVideoYoutube() throws IOException {
+        int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 1;
         Map<Integer, String> videoData = dataService.pullData(LIMIT_YOUTUBE_UPLOAD_QUOTAS);
         videoData.forEach((rowId, videoID) -> {
             VideoDto videoDto = photoService.getVideo(videoID);
             String videoLink = youtubeUploader.upload(videoDto);
             dataService.updateStatus(rowId, videoLink);
-//            dataService.updateStatus(rowId, "http://testing");
         });
     }
 }

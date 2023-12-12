@@ -26,6 +26,7 @@ import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
 import com.google.inject.Inject;
 import com.wind.photos.VideoDto;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.AuthUtil;
@@ -102,10 +103,7 @@ public class YoutubeUploader {
                 switch (httpUploader.getUploadState()) {
                     case INITIATION_STARTED -> logger.info("Initiation Started");
                     case INITIATION_COMPLETE -> logger.info("Initiation Completed");
-                    case MEDIA_IN_PROGRESS -> {
-                        logger.info("Upload in progress");
-                        logger.info("Upload percentage: " + httpUploader.getNumBytesUploaded());
-                    }
+                    case MEDIA_IN_PROGRESS -> logger.info("Upload percentage: " + httpUploader.getNumBytesUploaded());
                     case MEDIA_COMPLETE -> logger.info("Upload Completed!");
                     case NOT_STARTED -> logger.info("Upload Not Started!");
                 }
@@ -119,9 +117,9 @@ public class YoutubeUploader {
             logger.info("\n================== Returned Video ==================\n");
             logger.info("  - Id: " + returnedVideo.getId());
             logger.info("  - Title: " + returnedVideo.getSnippet().getTitle());
-            logger.info("  - Tags: " + returnedVideo.getSnippet().getTags());
-            logger.info("  - Privacy Status: " + returnedVideo.getStatus().getPrivacyStatus());
-            logger.info("  - Video Count: " + returnedVideo.getStatistics().getViewCount());
+//            logger.info("  - Tags: " + returnedVideo.getSnippet().getTags());
+//            logger.info("  - Privacy Status: " + returnedVideo.getStatus().getPrivacyStatus());
+//            logger.info("  - Video Count: " + returnedVideo.getStatistics().getViewCount());
 
             videoLink = videoLink + returnedVideo.getId();
         } catch (GoogleJsonResponseException e) {
@@ -144,7 +142,15 @@ public class YoutubeUploader {
         status.setPrivacyStatus("private");
         videoObjectDefiningMetadata.setStatus(status);
 
-        // Most of the video's metadata is set on the VideoSnippet object.
+        VideoSnippet snippet = generateSnippet(videoDto);
+
+        // Add the completed snippet object to the video resource.
+        videoObjectDefiningMetadata.setSnippet(snippet);
+        return videoObjectDefiningMetadata;
+    }
+
+    @NotNull
+    private static VideoSnippet generateSnippet(VideoDto videoDto) {
         VideoSnippet snippet = new VideoSnippet();
 
         // This code uses a Calendar instance to create a unique name and
@@ -153,16 +159,12 @@ public class YoutubeUploader {
         // and use your own standard names instead.
         Calendar cal = Calendar.getInstance();
         snippet.setTitle(videoDto.getName());
-        snippet.setDescription("Video uploaded via YouTube Data API V3 using the Java library " + "on " + cal.getTime());
+        snippet.setDescription("This video upload from GooglePhotoSync service " + "on " + cal.getTime());
 
         // Set the keyword tags that you want to associate with the video.
         List<String> tags = new ArrayList<>();
-        tags.add("test");
-        tags.add("java");
+        tags.add("google-photos");
         snippet.setTags(tags);
-
-        // Add the completed snippet object to the video resource.
-        videoObjectDefiningMetadata.setSnippet(snippet);
-        return videoObjectDefiningMetadata;
+        return snippet;
     }
 }

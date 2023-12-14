@@ -29,7 +29,7 @@ public class StartServer {
     private static final Logger logger = LoggerFactory.getLogger(StartServer.class.getName());
 
     static final String userId = "userId";
-    static final String redirectURI = "https://ptube-gmzeotoo4q-uc.a.run.app/Callback";
+    static final String redirectURI = "http://localhost:8080/Callback";
 //    static final String redirectURI = "https://ptube-gmzeotoo4q-uc.a.run.app/Callback";
 
     public static void main(String[] args) {

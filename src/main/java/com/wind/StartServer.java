@@ -5,6 +5,8 @@ import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.common.base.MoreObjects;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.wind.module.ConfigModule;
@@ -12,6 +14,7 @@ import com.wind.module.GoogleAPIMaterial;
 import com.wind.module.ServiceModule;
 import com.wind.photos.PhotoService;
 import com.wind.photos.VideoDto;
+import com.wind.service.FireStoreService;
 import com.wind.service.PhotoSyncService;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
@@ -19,7 +22,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static io.javalin.Javalin.create;
@@ -30,19 +35,24 @@ public class StartServer {
 
     static final String userId = "userId";
     static final String redirectURI = "http://localhost:8080/Callback";
-//    static final String redirectURI = "https://ptube-gmzeotoo4q-uc.a.run.app/Callback";
 
     public static void main(String[] args) {
         Injector injector = Guice.createInjector(new GoogleAPIMaterial(), new ConfigModule(), new ServiceModule());
 
         var app = create(cfg -> cfg.routing.contextPath = "/").start(8080);
         app.get("/", ctx -> ctx.json("Hello, is it me you're looking for"));
+        app.get("/data/{collection}/{key}", ctx -> {
+            FireStoreService fsService = injector.getInstance(FireStoreService.class);
+            Map<String, Object> data = fsService.readData(ctx.pathParam("collection"), ctx.pathParam("key"));
+            ctx.json(data);
+        });
         app.get("/login", ctx -> {
             AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
             Credential credential = flow.loadCredential(userId);
-            if (credential != null && (credential.getRefreshToken() != null
-                    || credential.getExpiresInSeconds() == null
-                    || credential.getExpiresInSeconds() > 60)) {
+            if (credential != null && (credential.getRefreshToken() != null || credential.getExpiresInSeconds() == null || credential.getExpiresInSeconds() > 60)) {
+                logger.info("credential {}", credential.getAccessToken());
+                logger.info("credential {}", credential.getRefreshToken());
+                logger.info("credential {}", credential.getExpiresInSeconds());
                 ctx.json("Found the credential valid").status(HttpStatus.OK);
             } else {
                 AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(redirectURI);
@@ -51,20 +61,17 @@ public class StartServer {
             }
         });
         app.get("/logout", ctx -> {
-            File credentialsDirectory = new File("oauth-credentials");
-            FileDataStoreFactory fileDataStoreFactory = new FileDataStoreFactory(credentialsDirectory);
-            fileDataStoreFactory.getDataStore("StoredCredential").clear();
+            AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
+            flow.getCredentialDataStore().delete(userId);
             ctx.result("logout");
         });
         app.get("/Callback", ctx -> {
             String code = ctx.queryParam("code");
-            // receive authorization code and exchange it for an access token
             AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
             TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
+            logger.info("token response {}", response);
             // store credential and return it
-            Credential credential = flow.createAndStoreCredential(response, userId);
-            logger.info("Access token {}", credential.getAccessToken());
-            logger.info("Refresh token {}", credential.getRefreshToken());
+            flow.createAndStoreCredential(response, userId);
             ctx.json("login success").status(HttpStatus.OK);
         });
         app.get("/video", ctx -> {

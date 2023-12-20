@@ -1,4 +1,4 @@
-package com.wind;
+package com.wind.auth;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
@@ -23,13 +23,14 @@ import java.util.List;
 import java.util.Objects;
 
 @Singleton
-public class GoogleAuthorizationUtil {
+public class OauthAuthorizationUtil {
 
     private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
     public final JsonFactory JSON_FACTORY;
     public final HttpTransport HTTP_TRANSPORT;
     private final List<String> REQUIRED_SCOPES;
+    private final FirestoreDataStoreFactory firestoreDataStoreFactory;
 
     {
         REQUIRED_SCOPES = ImmutableList.of(
@@ -42,9 +43,11 @@ public class GoogleAuthorizationUtil {
     }
 
     @Inject
-    public GoogleAuthorizationUtil(JsonFactory JSON_FACTORY, HttpTransport HTTP_TRANSPORT) {
+    public OauthAuthorizationUtil(JsonFactory JSON_FACTORY, HttpTransport HTTP_TRANSPORT,
+                                  FirestoreDataStoreFactory firestoreDataStoreFactory) {
         this.JSON_FACTORY = JSON_FACTORY;
         this.HTTP_TRANSPORT = HTTP_TRANSPORT;
+        this.firestoreDataStoreFactory = firestoreDataStoreFactory;
     }
 
     public AuthorizationCodeFlow initializeFlow() throws
@@ -54,11 +57,10 @@ public class GoogleAuthorizationUtil {
         Reader clientSecretReader = new InputStreamReader(is);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, clientSecretReader);
 
-        FileDataStoreFactory fileDataStoreFactory = getFileDataStoreFactory(clientSecrets);
         return new GoogleAuthorizationCodeFlow.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JSON_FACTORY, clientSecrets, REQUIRED_SCOPES).
-                setDataStoreFactory(fileDataStoreFactory).
+                setDataStoreFactory(firestoreDataStoreFactory).
                 setAccessType("offline").build();
     }
 

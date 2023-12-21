@@ -9,6 +9,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.base.MoreObjects;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import com.wind.module.ConfigModule;
 import com.wind.module.GoogleAPIMaterial;
 import com.wind.module.ServiceModule;
@@ -34,10 +36,14 @@ public class StartServer {
     private static final Logger logger = LoggerFactory.getLogger(StartServer.class.getName());
 
     static final String userId = "userId";
-    static final String redirectURI = "http://localhost:8080/Callback";
 
     public static void main(String[] args) {
-        Injector injector = Guice.createInjector(new GoogleAPIMaterial(), new ConfigModule(), new ServiceModule());
+        Injector injector = Guice.createInjector(
+                new GoogleAPIMaterial(),
+                new ConfigModule(),
+                new ServiceModule());
+        String redirectURI = injector.getInstance(Key.get(String.class, Names.named("url_redirect")));
+        logger.info("URL: {}", redirectURI);
 
         var app = create(cfg -> cfg.routing.contextPath = "/").start(8080);
         app.get("/", ctx -> ctx.json("Hello, is it me you're looking for"));
@@ -49,10 +55,9 @@ public class StartServer {
         app.get("/login", ctx -> {
             AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
             Credential credential = flow.loadCredential(userId);
-            if (credential != null && (credential.getRefreshToken() != null || credential.getExpiresInSeconds() == null || credential.getExpiresInSeconds() > 60)) {
-                logger.info("credential {}", credential.getAccessToken());
-                logger.info("credential {}", credential.getRefreshToken());
-                logger.info("credential {}", credential.getExpiresInSeconds());
+            if (credential != null && (credential.getRefreshToken() != null
+                    || credential.getExpiresInSeconds() == null
+                    || credential.getExpiresInSeconds() > 60)) {
                 ctx.json("Found the credential valid").status(HttpStatus.OK);
             } else {
                 AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(redirectURI);

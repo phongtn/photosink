@@ -13,8 +13,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.AuthUtil;
 
 import java.io.*;
@@ -24,8 +22,6 @@ import java.util.Objects;
 
 @Singleton
 public class OauthAuthorizationUtil {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
     public final JsonFactory JSON_FACTORY;
     public final HttpTransport HTTP_TRANSPORT;

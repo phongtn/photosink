@@ -29,12 +29,12 @@ public class FirestoreDataStore extends AbstractDataStore<StoredCredential> {
 
 
     @Override
-    public Set<String> keySet() throws IOException {
+    public Set<String> keySet() {
         return repository.findKeys();
     }
 
     @Override
-    public Collection<StoredCredential> values() throws IOException {
+    public Collection<StoredCredential> values() {
         return repository.findAll();
     }
 

@@ -53,6 +53,7 @@ public class ServiceModule extends AbstractModule {
         }
     }
 
+    @Provides
     GoogleClientSecrets loadGoogleClientSecret() {
         try {
             // Load client secrets.

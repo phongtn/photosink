@@ -24,10 +24,12 @@ public class GoogleServiceProvider {
     public final HttpTransport httpTransport;
     private final String APPLICATION_NAME;
     private final AuthorizationCodeFlow authorizationCodeFlow;
+    private final String userId;
 
 
     @Inject
     public GoogleServiceProvider(@Named("application_name") String applicationName,
+                                 @Named("default_user_id") String userId,
                                  HttpTransport httpTransport,
                                  GoogleClientSecrets googleClientSecrets,
                                  AuthorizationCodeFlow authorizationCodeFlow) {
@@ -35,6 +37,7 @@ public class GoogleServiceProvider {
         this.httpTransport = httpTransport;
         this.APPLICATION_NAME = applicationName;
         this.authorizationCodeFlow = authorizationCodeFlow;
+        this.userId = userId;
     }
 
     public YouTube initYouTubeClient() {
@@ -71,7 +74,7 @@ public class GoogleServiceProvider {
      */
     public Credential loadCredential() {
         try {
-            return authorizationCodeFlow.loadCredential("userId");
+            return authorizationCodeFlow.loadCredential(userId);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

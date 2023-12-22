@@ -30,13 +30,15 @@ public class StartServer {
 
     private static final Logger logger = LoggerFactory.getLogger(StartServer.class.getName());
 
-    static final String userId = "userId";
-
     public static void main(String[] args) {
         Injector injector = Guice.createInjector(new GoogleAPIMaterial(), new ConfigModule(), new ServiceModule());
         String redirectURI = injector.getInstance(Key.get(String.class, Names.named("url_redirect")));
+        String userId = injector.getInstance(Key.get(String.class, Names.named("default_user_id")));
+        int PORT = injector.getInstance(Key.get(Integer.class, Names.named("web_server_port")));
 
-        var app = create(cfg -> cfg.routing.contextPath = "/").start(8080);
+        logger.info("Server configuration: {} {} {}", redirectURI, userId, PORT);
+
+        var app = create(cfg -> cfg.routing.contextPath = "/").start(PORT);
         app.get("/", ctx -> ctx.json("Hello, is it me you're looking for"));
         app.get("/data/{collection}/{key}", ctx -> {
             FirestoreRepository fsService = injector.getInstance(FirestoreRepository.class);

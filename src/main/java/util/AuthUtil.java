@@ -29,28 +29,26 @@ import java.util.Objects;
 
 public class AuthUtil {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass().getName());
-
-    private GoogleClientSecrets.Details clientSecretsDetail;
-    public final JsonFactory JSON_FACTORY;
+    private final GoogleClientSecrets.Details clientSecretsDetail;
     public final HttpTransport httpTransport;
     private final String APPLICATION_NAME;
     private final AuthorizationCodeFlow authorizationCodeFlow;
 
 
     @Inject
-    public AuthUtil(JsonFactory jsonFactory, HttpTransport httpTransport,
-                    @Named("application_name") String applicationName,
+    public AuthUtil(@Named("application_name") String applicationName,
+                    HttpTransport httpTransport,
+                    GoogleClientSecrets googleClientSecrets,
                     AuthorizationCodeFlow authorizationCodeFlow) {
-        JSON_FACTORY = jsonFactory;
+        this.clientSecretsDetail = googleClientSecrets.getDetails();
         this.httpTransport = httpTransport;
-        APPLICATION_NAME = applicationName;
+        this.APPLICATION_NAME = applicationName;
         this.authorizationCodeFlow = authorizationCodeFlow;
     }
 
-    public YouTube initYouTubeClient(){
+    public YouTube initYouTubeClient() {
         Credential credential = this.loadCredential();
-        return new YouTube.Builder(httpTransport, JSON_FACTORY, credential)
+        return new YouTube.Builder(httpTransport, GsonFactory.getDefaultInstance(), credential)
                 .setApplicationName(APPLICATION_NAME).build();
     }
 
@@ -80,13 +78,8 @@ public class AuthUtil {
     /**
      * Authorizes the installed application to access user's protected data.
      */
-    public Credential loadCredential()  {
+    public Credential loadCredential() {
         try {
-            // Load client secrets.
-            InputStream is = Objects.requireNonNull(AuthUtil.class.getResourceAsStream("/client_secrets.json"));
-            Reader clientSecretReader = new InputStreamReader(is);
-            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, clientSecretReader);
-            clientSecretsDetail = clientSecrets.getDetails();
             return authorizationCodeFlow.loadCredential("userId");
         } catch (IOException e) {
             throw new RuntimeException(e);

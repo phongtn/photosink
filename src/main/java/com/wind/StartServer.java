@@ -1,92 +1,58 @@
 package com.wind;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
-import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
+import com.wind.controller.*;
 import com.wind.module.ConfigModule;
 import com.wind.module.GoogleAPIMaterial;
 import com.wind.module.ServiceModule;
-import com.wind.google.photos.PhotoService;
-import com.wind.google.photos.VideoDto;
-import com.wind.google.firestore.FirestoreRepository;
-import com.wind.service.PhotoSyncService;
 import io.javalin.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import static io.javalin.Javalin.create;
+import static io.javalin.apibuilder.ApiBuilder.get;
+import static io.javalin.apibuilder.ApiBuilder.path;
 
 public class StartServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(StartServer.class.getName());
-
     public static void main(String[] args) {
-        Injector injector = Guice.createInjector(new GoogleAPIMaterial(), new ConfigModule(), new ServiceModule());
-        String redirectURI = injector.getInstance(Key.get(String.class, Names.named("url_redirect")));
-        String userId = injector.getInstance(Key.get(String.class, Names.named("default_user_id")));
-        int PORT = injector.getInstance(Key.get(Integer.class, Names.named("web_server_port")));
+        // Initialize module
+        Injector injector = Guice.createInjector(
+                new GoogleAPIMaterial(),
+                new ConfigModule(),
+                new ServiceModule());
+        // Lookup the controllers
+        UserController userController = injector.getInstance(UserController.class);
+        String API_ACCESS_KEY = injector.getInstance(Key.get(String.class, Names.named("api_access_key")));
 
-        logger.info("Server configuration: {} {} {}", redirectURI, userId, PORT);
+        // Build the web server
+        int CFG_PORT = injector.getInstance(Key.get(Integer.class, Names.named("web_server_port")));
+        var app = create(cfg -> cfg.routing.contextPath = "/").start(CFG_PORT);
 
-        var app = create(cfg -> cfg.routing.contextPath = "/").start(PORT);
+        // Private API needed authenticate with API KEY
+        app.cfg.accessManager((handler, context, set) -> {
+            if (context.path().startsWith("/private") &&
+                    !AuthorizationUtil.canAccessAPI(context, API_ACCESS_KEY)) {
+                context.status(HttpStatus.UNAUTHORIZED).result("unauthorized");
+            } else
+                handler.handle(context);
+        });
+
+        // Public API
         app.get("/", ctx -> ctx.json("Hello, is it me you're looking for"));
-        app.get("/data/{collection}/{key}", ctx -> {
-            FirestoreRepository fsService = injector.getInstance(FirestoreRepository.class);
-            Map<String, Object> data = fsService.readData(ctx.pathParam("collection"), ctx.pathParam("key"));
-            ctx.json(data);
-        });
-        app.get("/login", ctx -> {
-            AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
-            Credential credential = flow.loadCredential(userId);
-            if (credential != null && (credential.getRefreshToken() != null || credential.getExpiresInSeconds() == null || credential.getExpiresInSeconds() > 60)) {
-                ctx.json("Found the credential valid").status(HttpStatus.OK);
-            } else {
-                AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(redirectURI);
-                logger.info("Sign in URL{}", authorizationUrl.build());
-                ctx.redirect(authorizationUrl.build(), HttpStatus.MOVED_PERMANENTLY);
-            }
-        });
-        app.get("/logout", ctx -> {
-            AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
-            flow.getCredentialDataStore().delete(userId);
-            ctx.result("logout");
-        });
-        app.get("/Callback", ctx -> {
-            String code = ctx.queryParam("code");
-            AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
-            TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
-            // store credential and return it
-            flow.createAndStoreCredential(response, userId);
-            ctx.json("login success").status(HttpStatus.OK);
-        });
-        app.get("/video", ctx -> {
-            PhotoService photoService = injector.getInstance(PhotoService.class);
-            int year = Integer.parseInt(Objects.requireNonNull(ctx.queryParam("y")));
-            int month = Integer.parseInt(Objects.requireNonNull(ctx.queryParam("m")));
-            int day = Integer.parseInt(Objects.requireNonNull(ctx.queryParam("d")));
-            List<VideoDto> video = photoService.getVideos(LocalDate.of(year, month, day));
-            ctx.json(video).status(HttpStatus.OK);
-        });
-        app.get("/sync/photos", ctx -> {
-            PhotoSyncService syncService = injector.getInstance(PhotoSyncService.class);
-            syncService.pullVideoToday();
-            ctx.result("Success").status(HttpStatus.OK);
-        });
-        app.get("/sync/utube", ctx -> {
-            PhotoSyncService syncService = injector.getInstance(PhotoSyncService.class);
-            syncService.pushVideoYoutube();
-            ctx.result("Success").status(HttpStatus.OK);
-        });
+        app.get("/data/{collection}/{key}", ctx -> injector.getInstance(DataController.class).findData(ctx));
+        app.get("/login", userController::login);
+        app.get("/logout", userController::logout);
+        app.get("/Callback", userController::callback);
+
+        // Private API required access key
+        app.routes(() -> path("private", () -> {
+            get("video", ctx -> injector.getInstance(PhotosController.class).findMedia(ctx));
+            get("sync/photos", ctx -> injector.getInstance(SyncController.class).syncLatestVideo(ctx));
+            get("sync/utube", ctx -> injector.getInstance(SyncController.class).syncVideo2Youtube(ctx));
+        }));
+
 
     }
 }

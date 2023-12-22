@@ -38,7 +38,7 @@ public class PhotoSyncService {
     }
 
     public void pushVideoYoutube() throws IOException {
-        int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 1;
+        int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 2;
         Map<Integer, String> videoData = sheetService.pullData(LIMIT_YOUTUBE_UPLOAD_QUOTAS);
         videoData.forEach((rowId, videoID) -> {
             VideoDto videoDto = photoService.getVideo(videoID);

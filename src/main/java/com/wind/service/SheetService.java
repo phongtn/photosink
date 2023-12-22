@@ -51,7 +51,7 @@ public class SheetService {
             if (rowPhotoID.size() >= limit)
                 break;
         }
-        logger.info("Videos not yet synced to YouTube {} video. Videos uploaded: {} video", rowPhotoID.size(), countVideoUploaded);
+        logger.info("Videos not yet synced to YouTube {} video. Total videos uploaded: {} video", rowPhotoID.size(), countVideoUploaded);
         return rowPhotoID;
     }
 

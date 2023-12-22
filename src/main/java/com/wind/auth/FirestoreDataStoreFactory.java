@@ -3,6 +3,7 @@ package com.wind.auth;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.inject.Inject;
+import com.wind.google.firestore.GoogleCredentialsRepository;
 
 import java.io.Serializable;
 

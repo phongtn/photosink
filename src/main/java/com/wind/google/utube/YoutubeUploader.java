@@ -1,4 +1,4 @@
-package com.wind.utube;
+package com.wind.google.utube;
 
 /*
  * Copyright (c) 2012 Google Inc.
@@ -25,7 +25,7 @@ import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
 import com.google.inject.Inject;
-import com.wind.photos.VideoDto;
+import com.wind.google.photos.VideoDto;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

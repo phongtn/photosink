@@ -4,6 +4,7 @@ import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.api.client.util.store.AbstractDataStore;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.DataStoreFactory;
+import com.wind.google.firestore.GoogleCredentialsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

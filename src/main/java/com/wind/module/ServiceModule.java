@@ -8,8 +8,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.wind.auth.OauthAuthorizationUtil;
-import com.wind.photos.PhotoService;
-import com.wind.photos.PhotosProcessor;
+import com.wind.google.photos.PhotoService;
+import com.wind.google.photos.PhotosProcessor;
 import util.AuthUtil;
 
 import java.io.IOException;

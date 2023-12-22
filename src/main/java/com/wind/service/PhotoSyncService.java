@@ -1,10 +1,10 @@
 package com.wind.service;
 
 import com.google.inject.Inject;
-import com.wind.photos.PhotoService;
-import com.wind.photos.PhotosProcessor;
-import com.wind.photos.VideoDto;
-import com.wind.utube.YoutubeUploader;
+import com.wind.google.photos.PhotoService;
+import com.wind.google.photos.PhotosProcessor;
+import com.wind.google.photos.VideoDto;
+import com.wind.google.utube.YoutubeUploader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,15 +17,15 @@ public class PhotoSyncService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-    private final DataService dataService;
+    private final SheetService sheetService;
     private final PhotoService photoService;
     private final YoutubeUploader youtubeUploader;
 
     @Inject
-    public PhotoSyncService(DataService dataService,
+    public PhotoSyncService(SheetService sheetService,
                             PhotosProcessor photoService,
                             YoutubeUploader youtubeUploader) {
-        this.dataService = dataService;
+        this.sheetService = sheetService;
         this.photoService = photoService;
         this.youtubeUploader = youtubeUploader;
     }
@@ -33,17 +33,17 @@ public class PhotoSyncService {
     public void pullVideoToday() throws IOException {
         List<VideoDto> videoDtos = photoService.getVideos(LocalDate.now());
         for (VideoDto video : videoDtos) {
-            dataService.insertVideo(video);
+            sheetService.insertVideo(video);
         }
     }
 
     public void pushVideoYoutube() throws IOException {
         int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 1;
-        Map<Integer, String> videoData = dataService.pullData(LIMIT_YOUTUBE_UPLOAD_QUOTAS);
+        Map<Integer, String> videoData = sheetService.pullData(LIMIT_YOUTUBE_UPLOAD_QUOTAS);
         videoData.forEach((rowId, videoID) -> {
             VideoDto videoDto = photoService.getVideo(videoID);
             String videoLink = youtubeUploader.upload(videoDto);
-            dataService.updateStatus(rowId, videoLink);
+            sheetService.updateStatus(rowId, videoLink);
         });
     }
 }

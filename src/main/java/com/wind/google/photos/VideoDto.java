@@ -1,4 +1,4 @@
-package com.wind.photos;
+package com.wind.google.photos;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

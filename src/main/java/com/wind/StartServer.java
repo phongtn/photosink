@@ -4,9 +4,6 @@ import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.common.base.MoreObjects;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -14,17 +11,15 @@ import com.google.inject.name.Names;
 import com.wind.module.ConfigModule;
 import com.wind.module.GoogleAPIMaterial;
 import com.wind.module.ServiceModule;
-import com.wind.photos.PhotoService;
-import com.wind.photos.VideoDto;
-import com.wind.service.FireStoreService;
+import com.wind.google.photos.PhotoService;
+import com.wind.google.photos.VideoDto;
+import com.wind.google.firestore.FirestoreRepository;
 import com.wind.service.PhotoSyncService;
 import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,26 +33,20 @@ public class StartServer {
     static final String userId = "userId";
 
     public static void main(String[] args) {
-        Injector injector = Guice.createInjector(
-                new GoogleAPIMaterial(),
-                new ConfigModule(),
-                new ServiceModule());
+        Injector injector = Guice.createInjector(new GoogleAPIMaterial(), new ConfigModule(), new ServiceModule());
         String redirectURI = injector.getInstance(Key.get(String.class, Names.named("url_redirect")));
-        logger.info("URL: {}", redirectURI);
 
         var app = create(cfg -> cfg.routing.contextPath = "/").start(8080);
         app.get("/", ctx -> ctx.json("Hello, is it me you're looking for"));
         app.get("/data/{collection}/{key}", ctx -> {
-            FireStoreService fsService = injector.getInstance(FireStoreService.class);
+            FirestoreRepository fsService = injector.getInstance(FirestoreRepository.class);
             Map<String, Object> data = fsService.readData(ctx.pathParam("collection"), ctx.pathParam("key"));
             ctx.json(data);
         });
         app.get("/login", ctx -> {
             AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
             Credential credential = flow.loadCredential(userId);
-            if (credential != null && (credential.getRefreshToken() != null
-                    || credential.getExpiresInSeconds() == null
-                    || credential.getExpiresInSeconds() > 60)) {
+            if (credential != null && (credential.getRefreshToken() != null || credential.getExpiresInSeconds() == null || credential.getExpiresInSeconds() > 60)) {
                 ctx.json("Found the credential valid").status(HttpStatus.OK);
             } else {
                 AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(redirectURI);
@@ -74,7 +63,6 @@ public class StartServer {
             String code = ctx.queryParam("code");
             AuthorizationCodeFlow flow = injector.getInstance(AuthorizationCodeFlow.class);
             TokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
-            logger.info("token response {}", response);
             // store credential and return it
             flow.createAndStoreCredential(response, userId);
             ctx.json("login success").status(HttpStatus.OK);

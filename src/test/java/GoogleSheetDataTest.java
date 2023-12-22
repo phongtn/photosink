@@ -5,7 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.wind.module.ConfigModule;
 import com.wind.module.GoogleAPIMaterial;
-import com.wind.sheet.SheetPersistence;
+import com.wind.google.sheet.SheetPersistence;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;

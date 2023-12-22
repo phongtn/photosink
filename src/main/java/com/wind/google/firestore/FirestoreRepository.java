@@ -1,4 +1,4 @@
-package com.wind.service;
+package com.wind.google.firestore;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class FireStoreService {
+public class FirestoreRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(FireStoreService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(FirestoreRepository.class.getName());
     private final Firestore db;
 
     @Inject
-    public FireStoreService(Firestore firestore) {
+    public FirestoreRepository(Firestore firestore) {
         this.db = firestore;
     }
 

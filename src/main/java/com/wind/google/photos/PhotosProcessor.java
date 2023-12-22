@@ -1,4 +1,4 @@
-package com.wind.photos;
+package com.wind.google.photos;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.inject.Inject;

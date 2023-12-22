@@ -1,8 +1,7 @@
-package com.wind.auth;
+package com.wind.google.firestore;
 
 import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.inject.Inject;
-import com.wind.service.FireStoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,12 +11,12 @@ public class GoogleCredentialsRepository {
 
     private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
-    public final FireStoreService fireStoreService;
+    public final FirestoreRepository firestoreRepository;
     public final String COLLECTION_NAME = "users";
 
     @Inject
-    public GoogleCredentialsRepository(FireStoreService fireStoreService) {
-        this.fireStoreService = fireStoreService;
+    public GoogleCredentialsRepository(FirestoreRepository firestoreRepository) {
+        this.firestoreRepository = firestoreRepository;
     }
 
     public Collection<StoredCredential> findAll() {
@@ -36,11 +35,11 @@ public class GoogleCredentialsRepository {
      * Clear all collection's data
      */
     public void clearData() {
-        fireStoreService.deleteCollection(COLLECTION_NAME);
+        firestoreRepository.deleteCollection(COLLECTION_NAME);
     }
 
     public StoredCredential getUserToken(String userId) {
-        Map<String, Object> data = fireStoreService.readData(COLLECTION_NAME, userId);
+        Map<String, Object> data = firestoreRepository.readData(COLLECTION_NAME, userId);
         if (!data.isEmpty()) {
             StoredCredential storedCredential = new StoredCredential();
             storedCredential.setExpirationTimeMilliseconds(Long.parseLong(data.get("expirationTimeSeconds").toString()));
@@ -56,11 +55,11 @@ public class GoogleCredentialsRepository {
         mapData.put("accessKey", accessToken);
         mapData.put("refreshKey", refreshToken);
         mapData.put("expirationTimeSeconds", expirationTimeSeconds);
-        fireStoreService.insertData(COLLECTION_NAME, userId, mapData);
+        firestoreRepository.insertData(COLLECTION_NAME, userId, mapData);
     }
 
     public void removeToken(String userId) {
-        fireStoreService.deleteData(COLLECTION_NAME, userId);
+        firestoreRepository.deleteData(COLLECTION_NAME, userId);
     }
 
 }

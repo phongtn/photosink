@@ -3,32 +3,31 @@ package com.wind.service;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.wind.photos.VideoDto;
-import com.wind.sheet.SheetPersistence;
+import com.wind.google.photos.VideoDto;
+import com.wind.google.sheet.SheetPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataService {
+public class SheetService {
 
     private final SheetPersistence sheetPersistence;
     private final int ROW_BEGIN_INDEX;
     private final String DATA_RANGES;
     private final String COL_LABEL_STATUS;
     private final String COL_LABEL_UTUBE_LINK;
-    private static final Logger logger = LoggerFactory.getLogger(DataService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SheetService.class.getName());
 
     @Inject
-    public DataService(SheetPersistence sheetPersistence,
-                       @Named("row_begin") int rowBeginIndex,
-                       @Named("data_ranges") String dataRanges,
-                       @Named("column_status") String colLabelStatus,
-                       @Named("column_link") String colLabelUtubeLink) {
+    public SheetService(SheetPersistence sheetPersistence,
+                        @Named("row_begin") int rowBeginIndex,
+                        @Named("data_ranges") String dataRanges,
+                        @Named("column_status") String colLabelStatus,
+                        @Named("column_link") String colLabelUtubeLink) {
         this.sheetPersistence = sheetPersistence;
         ROW_BEGIN_INDEX = rowBeginIndex;
         DATA_RANGES = dataRanges;

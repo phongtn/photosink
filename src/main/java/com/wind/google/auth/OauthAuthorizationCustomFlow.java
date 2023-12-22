@@ -1,4 +1,4 @@
-package com.wind.auth;
+package com.wind.google.auth;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;

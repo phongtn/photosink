@@ -5,7 +5,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.inject.AbstractModule;
-import util.AuthUtil;
 
 /**
  * This configuration for build the Google Client

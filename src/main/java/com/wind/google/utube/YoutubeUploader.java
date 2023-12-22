@@ -29,7 +29,7 @@ import com.wind.google.photos.VideoDto;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.AuthUtil;
+import com.wind.google.GoogleServiceProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +57,8 @@ public class YoutubeUploader {
     private final YouTube youTube;
 
     @Inject
-    public YoutubeUploader(AuthUtil authUtil) {
-        this.youTube = authUtil.initYouTubeClient();
+    public YoutubeUploader(GoogleServiceProvider apiServiceProvider) {
+        this.youTube = apiServiceProvider.initYouTubeClient();
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.wind.auth;
+package com.wind.google.auth;
 
 import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.api.client.util.store.AbstractDataStore;

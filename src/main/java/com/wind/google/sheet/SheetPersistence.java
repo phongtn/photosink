@@ -8,7 +8,7 @@ import com.google.inject.name.Named;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.AuthUtil;
+import com.wind.google.GoogleServiceProvider;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,14 +17,14 @@ public class SheetPersistence {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPersistence.class.getName());
 
-    private final AuthUtil authUtil;
+    private final GoogleServiceProvider apiServiceProvider;
     private final String googleSheetID;
     private final Sheets sheetsService;
 
     @Inject
-    public SheetPersistence(AuthUtil authUtil, @Named("gg_sheet_id") String googleSheetID) {
-        this.authUtil = authUtil;
-        this.sheetsService = authUtil.initSheetService();
+    public SheetPersistence(GoogleServiceProvider apiServiceProvider, @Named("gg_sheet_id") String googleSheetID) {
+        this.apiServiceProvider = apiServiceProvider;
+        this.sheetsService = apiServiceProvider.initSheetService();
         this.googleSheetID = googleSheetID;
     }
 
@@ -44,7 +44,7 @@ public class SheetPersistence {
     }
 
     public Spreadsheet getSheet() throws IOException {
-        Sheets service = authUtil.initSheetService();
+        Sheets service = apiServiceProvider.initSheetService();
         return service.spreadsheets().get(googleSheetID).execute();
     }
 

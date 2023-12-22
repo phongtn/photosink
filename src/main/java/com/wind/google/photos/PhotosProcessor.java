@@ -16,7 +16,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.AuthUtil;
+import com.wind.google.GoogleServiceProvider;
 import util.DateTimeUtil;
 
 import java.io.File;
@@ -36,8 +36,8 @@ public class PhotosProcessor implements PhotoService {
     private final PhotosLibraryClient photosLibraryClient;
 
     @Inject
-    public PhotosProcessor(AuthUtil authUtil) throws IOException {
-        photosLibraryClient = authUtil.initPhotoClient();
+    public PhotosProcessor(GoogleServiceProvider apiServiceProvider) throws IOException {
+        photosLibraryClient = apiServiceProvider.initPhotoClient();
     }
 
     @Override

@@ -9,7 +9,7 @@ So, the first priority in choosing a service is lower cost. :)
 1. Cloud Function to call Google Photo APIs
 2. Cloud Run to upload the youtube video
 3. Cloud scheduler to trigger these function at 00:00 AM
-4. Thinking about data storage...
+4. Use Google spreadsheet to host video files and Firestore to save Google's Credentials
 
 ### Guideline for developer
 The following guides illustrate how to use some features concretely:
@@ -45,10 +45,17 @@ OS:           Mac OS X 14.1.1 aarch64
 #### Application configuration
 ```
 gg_sheet_id=Google Sheet IP
-data_ranges=A2:E10
+application_name=photos-2utube
+data_ranges=A2:E
 row_begin=2
 column_status=E
 column_link=F
+column_created_at=G
+api_access_key=${API_ACCESS_KEY}
+url_redirect=${URL_REDIRECT}
+default_user_id=userId
+web_server_port=8080
+number_videos_synced_utube=1
 ```
 
 #### How to build the service?

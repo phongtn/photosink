@@ -44,9 +44,17 @@ public class PhotoSyncService {
     public void pushVideoYoutube() throws IOException {
         Map<Integer, String> videoData = sheetService.pullData(LIMIT_YOUTUBE_UPLOAD_QUOTAS);
         videoData.forEach((rowId, videoID) -> {
-            VideoDto videoDto = photoService.getVideo(videoID);
-            String videoLink = youtubeUploader.upload(videoDto);
-            sheetService.updateStatus(rowId, videoLink);
+            String videoLink;
+            String status = "DONE";
+            try {
+                VideoDto videoDto = photoService.getVideo(videoID);
+                videoLink = youtubeUploader.upload(videoDto);
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+                videoLink = ex.getMessage();
+                status = "FAILED";
+            }
+            sheetService.updateResult(rowId, status, videoLink);
         });
     }
 }

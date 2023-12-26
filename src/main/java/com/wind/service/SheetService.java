@@ -7,6 +7,7 @@ import com.wind.google.photos.VideoDto;
 import com.wind.google.sheet.SheetPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.DateTimeUtil;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ public class SheetService {
     private final String DATA_RANGES;
     private final String COL_LABEL_STATUS;
     private final String COL_LABEL_UTUBE_LINK;
+    private final String COL_LABEL_CREATED;
     private static final Logger logger = LoggerFactory.getLogger(SheetService.class.getName());
 
     @Inject
@@ -27,16 +29,17 @@ public class SheetService {
                         @Named("row_begin") int rowBeginIndex,
                         @Named("data_ranges") String dataRanges,
                         @Named("column_status") String colLabelStatus,
-                        @Named("column_link") String colLabelUtubeLink) {
+                        @Named("column_link") String colLabelUtubeLink,
+                        @Named("column_created_at") String colLabelCreated) {
         this.sheetPersistence = sheetPersistence;
         ROW_BEGIN_INDEX = rowBeginIndex;
         DATA_RANGES = dataRanges;
         COL_LABEL_STATUS = colLabelStatus;
         COL_LABEL_UTUBE_LINK = colLabelUtubeLink;
+        COL_LABEL_CREATED = colLabelCreated;
     }
 
     /**
-     *
      * @param limit number of videos sync to YouTube
      * @return a map store the row index as key and video's ID as value
      * @throws IOException if data not found
@@ -57,13 +60,14 @@ public class SheetService {
             if (videoIDs.size() >= limit)
                 break;
         }
-        logger.info("Total videos uploaded: {} video. Videos not yet synced to YouTube {} video.", countVideoUploaded, videoIDs.size());
+        logger.info("\n\tTotal videos uploaded: {} video. \n\tNow we start to sync: {} videos.", countVideoUploaded, videoIDs.size());
         return videoIDs;
     }
 
-    public void updateStatus(int rowIndex, String youtubeLink) {
-        sheetPersistence.updateCellValue(COL_LABEL_STATUS + rowIndex, "DONE");
-        sheetPersistence.updateCellValue(COL_LABEL_UTUBE_LINK + rowIndex, youtubeLink);
+    public void updateResult(int rowIndex, String status, String youtubeLink) {
+        // e.g: A22:G
+        String range = COL_LABEL_STATUS + rowIndex + ":" + COL_LABEL_CREATED;
+        sheetPersistence.updateMultiValue(range, List.of(status, youtubeLink, DateTimeUtil.nowWithTime()));
         logger.info("The row index {} update succeeded.", rowIndex);
     }
 

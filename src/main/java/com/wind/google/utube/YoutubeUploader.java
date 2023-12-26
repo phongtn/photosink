@@ -33,6 +33,7 @@ import com.wind.google.GoogleServiceProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
@@ -66,71 +67,51 @@ public class YoutubeUploader {
      * looks for the video in the application's project folder and uses OAuth
      * 2.0 to authorize the API request.
      */
-    public String upload(VideoDto videoDto) {
+    public String upload(VideoDto videoDto) throws IOException {
+        logger.info("Start to sync video: {}", videoDto.getName());
         String videoLink = "https://www.youtube.com/watch?v=";
-        try {
-            // Add extra information to the video before uploading.
-            Video videoObjectDefiningMetadata = convertYoutubeVideo(videoDto);
+        // Add extra information to the video before uploading.
+        Video videoObjectDefiningMetadata = convertYoutubeVideo(videoDto);
+        InputStream in = new URL(videoDto.getUrlDownload()).openStream();
+        InputStreamContent mediaContent = new InputStreamContent(videoDto.getMimeType(), in);
 
-            InputStream in = new URL(videoDto.getUrlDownload()).openStream();
-            InputStreamContent mediaContent = new InputStreamContent(videoDto.getMimeType(), in);
-//            InputStreamContent mediaContent = new InputStreamContent(VIDEO_FILE_FORMAT,
-//                    UploadVideo.class.getResourceAsStream("/sample-video.mp4"));
+        // Insert the video. The command sends three arguments. The first
+        // specifies which information the API request is setting and which
+        // information the API response should return. The second argument
+        // is the video resource that contains metadata about the new video.
+        // The third argument is the actual video content.
+        YouTube.Videos.Insert videoInsert = youTube.videos().insert(
+                Collections.singletonList("snippet,statistics,status"),
+                videoObjectDefiningMetadata, mediaContent);
 
-            // Insert the video. The command sends three arguments. The first
-            // specifies which information the API request is setting and which
-            // information the API response should return. The second argument
-            // is the video resource that contains metadata about the new video.
-            // The third argument is the actual video content.
-            YouTube.Videos.Insert videoInsert = youTube.videos().insert(
-                    Collections.singletonList("snippet,statistics,status"),
-                    videoObjectDefiningMetadata, mediaContent);
+        // Set the upload type and add an event listener.
+        MediaHttpUploader uploader = videoInsert.getMediaHttpUploader();
 
-            // Set the upload type and add an event listener.
-            MediaHttpUploader uploader = videoInsert.getMediaHttpUploader();
+        // Indicate whether direct media upload is enabled. A value of
+        // "True" indicates that direct media upload is enabled and that
+        // the entire media content will be uploaded in a single request.
+        // A value of "False," which is the default, indicates that the
+        // request will use the resumable media upload protocol, which
+        // supports the ability to resume an upload operation after a
+        // network interruption or other transmission failure, saving
+        // time and bandwidth in the event of network failures.
+        uploader.setDirectUploadEnabled(false);
 
-            // Indicate whether direct media upload is enabled. A value of
-            // "True" indicates that direct media upload is enabled and that
-            // the entire media content will be uploaded in a single request.
-            // A value of "False," which is the default, indicates that the
-            // request will use the resumable media upload protocol, which
-            // supports the ability to resume an upload operation after a
-            // network interruption or other transmission failure, saving
-            // time and bandwidth in the event of network failures.
-            uploader.setDirectUploadEnabled(false);
+        MediaHttpUploaderProgressListener progressListener = httpUploader -> {
+            switch (httpUploader.getUploadState()) {
+                case INITIATION_STARTED -> logger.info("Initiation Started");
+                case INITIATION_COMPLETE -> logger.info("Initiation Completed");
+                case MEDIA_IN_PROGRESS -> logger.info("Upload percentage: " + httpUploader.getNumBytesUploaded());
+                case MEDIA_COMPLETE -> logger.info("Upload Completed!");
+                case NOT_STARTED -> logger.info("Upload Not Started!");
+            }
+        };
+        uploader.setProgressListener(progressListener);
 
-            MediaHttpUploaderProgressListener progressListener = httpUploader -> {
-                switch (httpUploader.getUploadState()) {
-                    case INITIATION_STARTED -> logger.info("Initiation Started");
-                    case INITIATION_COMPLETE -> logger.info("Initiation Completed");
-                    case MEDIA_IN_PROGRESS -> logger.info("Upload percentage: " + httpUploader.getNumBytesUploaded());
-                    case MEDIA_COMPLETE -> logger.info("Upload Completed!");
-                    case NOT_STARTED -> logger.info("Upload Not Started!");
-                }
-            };
-            uploader.setProgressListener(progressListener);
-
-            // Call the API and upload the video.
-            Video returnedVideo = videoInsert.execute();
-
-            // Print data about the newly inserted video from the API response.
-            logger.info("\n================== Returned Video ==================\n");
-            logger.info("  - Id: " + returnedVideo.getId());
-            logger.info("  - Title: " + returnedVideo.getSnippet().getTitle());
-//            logger.info("  - Tags: " + returnedVideo.getSnippet().getTags());
-//            logger.info("  - Privacy Status: " + returnedVideo.getStatus().getPrivacyStatus());
-//            logger.info("  - Video Count: " + returnedVideo.getStatistics().getViewCount());
-
-            videoLink = videoLink + returnedVideo.getId();
-        } catch (GoogleJsonResponseException e) {
-            GoogleJsonError jsonError = e.getDetails();
-            logger.error("GoogleJsonResponseException code: " + jsonError.getCode() + " : " + jsonError.getMessage(), e);
-        } catch (IOException e) {
-            logger.error("IOException: " + e.getMessage(), e);
-        } catch (Throwable t) {
-            logger.error("Throwable: " + t.getMessage(), t);
-        }
-        return videoLink;
+        // Call the API and upload the video.
+        Video returnedVideo = videoInsert.execute();
+        logger.info("The video {} synced to YouTube", returnedVideo.getSnippet().getTitle());
+        return videoLink + returnedVideo.getId();
     }
 
     private static Video convertYoutubeVideo(VideoDto videoDto) {

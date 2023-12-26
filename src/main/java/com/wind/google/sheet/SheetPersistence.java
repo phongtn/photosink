@@ -128,11 +128,11 @@ public class SheetPersistence {
         }
     }
 
-    public void updateMultiValue(String cellPosition, String... cellValue) {
+    public UpdateValuesResponse updateMultiValue(String cellPosition, List<Object> dataList) {
         List<List<Object>> bodyValue = new ArrayList<>();
-        bodyValue.add(List.of(cellValue));
+        bodyValue.add(dataList);
         try {
-            this.updateValues(cellPosition, bodyValue);
+            return this.updateValues(cellPosition, bodyValue);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -65,10 +65,8 @@ public class GoogleSheetDataTest {
             String ranges = "E22:G";
             String cellValueStatus = "DONE";
 
-            // update the cell value
-            List<List<Object>> bodyValue = new ArrayList<>();
-            bodyValue.add(List.of(cellValueStatus, "uri", DateTimeUtil.nowWithTime()));
-            UpdateValuesResponse updateResponse = sheetServiceData.updateValues(ranges, bodyValue);
+            List<Object> data = List.of(cellValueStatus, "uri", DateTimeUtil.nowWithTime());
+            UpdateValuesResponse updateResponse = sheetServiceData.updateMultiValue(ranges, data);
             logger.info("The value update at {}:", updateResponse.getUpdatedRange());
 
             // Read the recent data updated
@@ -87,7 +85,7 @@ public class GoogleSheetDataTest {
     public void testUpdateCellValue() {
         try {
             String ranges = "E2";
-            String cellValue = "UPLOADED";
+            String cellValue = "DONE";
 
             // update the cell value
             List<List<Object>> bodyValue = new ArrayList<>();

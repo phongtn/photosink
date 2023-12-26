@@ -1,6 +1,7 @@
 package com.wind.service;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.wind.google.photos.PhotoService;
 import com.wind.google.photos.PhotosProcessor;
 import com.wind.google.photos.VideoDto;
@@ -20,14 +21,17 @@ public class PhotoSyncService {
     private final SheetService sheetService;
     private final PhotoService photoService;
     private final YoutubeUploader youtubeUploader;
+    private final int LIMIT_YOUTUBE_UPLOAD_QUOTAS;
 
     @Inject
     public PhotoSyncService(SheetService sheetService,
                             PhotosProcessor photoService,
-                            YoutubeUploader youtubeUploader) {
+                            YoutubeUploader youtubeUploader,
+                            @Named("number_videos_synced_utube") int limitYoutubeUploadQuotas) {
         this.sheetService = sheetService;
         this.photoService = photoService;
         this.youtubeUploader = youtubeUploader;
+        this.LIMIT_YOUTUBE_UPLOAD_QUOTAS = limitYoutubeUploadQuotas;
     }
 
     public void pullVideoToday() throws IOException {
@@ -38,7 +42,6 @@ public class PhotoSyncService {
     }
 
     public void pushVideoYoutube() throws IOException {
-        int LIMIT_YOUTUBE_UPLOAD_QUOTAS = 2;
         Map<Integer, String> videoData = sheetService.pullData(LIMIT_YOUTUBE_UPLOAD_QUOTAS);
         videoData.forEach((rowId, videoID) -> {
             VideoDto videoDto = photoService.getVideo(videoID);

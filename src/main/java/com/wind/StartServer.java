@@ -33,7 +33,7 @@ public class StartServer {
         // Private API needed authenticate with API KEY
         app.cfg.accessManager((handler, context, set) -> {
             if (context.path().startsWith("/private") &&
-                    !AuthorizationUtil.canAccessAPI(context, API_ACCESS_KEY)) {
+                    !AuthorizationHandler.canAccessAPI(context, API_ACCESS_KEY)) {
                 context.status(HttpStatus.UNAUTHORIZED).result("unauthorized");
             } else
                 handler.handle(context);

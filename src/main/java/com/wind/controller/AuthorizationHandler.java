@@ -2,7 +2,7 @@ package com.wind.controller;
 
 import io.javalin.http.Context;
 
-public class AuthorizationUtil {
+public class AuthorizationHandler {
 
     /**
      * Just valid in case client include the API KEY

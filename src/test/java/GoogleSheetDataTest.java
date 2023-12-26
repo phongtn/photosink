@@ -6,10 +6,12 @@ import com.google.inject.Injector;
 import com.wind.module.ConfigModule;
 import com.wind.module.GoogleAPIMaterial;
 import com.wind.google.sheet.SheetPersistence;
+import com.wind.module.ServiceModule;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.DateTimeUtil;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -27,7 +29,7 @@ public class GoogleSheetDataTest {
 
     @BeforeClass
     public static void setup() {
-        Injector injector = Guice.createInjector(new GoogleAPIMaterial(), new ConfigModule());
+        Injector injector = Guice.createInjector(new GoogleAPIMaterial(), new ConfigModule(), new ServiceModule());
         sheetServiceData = injector.getInstance(SheetPersistence.class);
     }
 
@@ -52,6 +54,30 @@ public class GoogleSheetDataTest {
             ValueRange headTitle = valueRanges.get(0);
             String cellValue = headTitle.getValues().get(0).get(0).toString();
             assertThat(cellValue, equalTo("ID"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testUpdateMultiValue() {
+        try {
+            String ranges = "E22:G";
+            String cellValueStatus = "DONE";
+
+            // update the cell value
+            List<List<Object>> bodyValue = new ArrayList<>();
+            bodyValue.add(List.of(cellValueStatus, "uri", DateTimeUtil.nowWithTime()));
+            UpdateValuesResponse updateResponse = sheetServiceData.updateValues(ranges, bodyValue);
+            logger.info("The value update at {}:", updateResponse.getUpdatedRange());
+
+            // Read the recent data updated
+            List<ValueRange> valueRanges = sheetServiceData.readValueRange(ranges);
+            ValueRange headTitle = valueRanges.get(0);
+            String currentValue = headTitle.getValues().get(0).get(0).toString();
+            logger.info("The current value at {} is {}", updateResponse.getUpdatedRange(), currentValue);
+            logger.info("{}", currentValue);
+            assertThat(currentValue, equalTo(cellValueStatus));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

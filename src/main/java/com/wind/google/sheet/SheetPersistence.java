@@ -128,6 +128,16 @@ public class SheetPersistence {
         }
     }
 
+    public void updateMultiValue(String cellPosition, String... cellValue) {
+        List<List<Object>> bodyValue = new ArrayList<>();
+        bodyValue.add(List.of(cellValue));
+        try {
+            this.updateValues(cellPosition, bodyValue);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * <a href="https://developers.google.com/sheets/api/samples/writing">Basic writing</a>
      * Sets values in a range of a spreadsheet.
@@ -146,7 +156,7 @@ public class SheetPersistence {
                     .update(googleSheetID, range, body)
                     .setValueInputOption("RAW")
                     .execute();
-            logger.info("{} cells updated.", result.getUpdatedCells());
+            logger.debug("{} cells updated.", result.getUpdatedCells());
         } catch (GoogleJsonResponseException e) {
             GoogleJsonError error = e.getDetails();
             if (error.getCode() == 404) {

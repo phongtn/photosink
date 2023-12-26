@@ -35,24 +35,30 @@ public class SheetService {
         COL_LABEL_UTUBE_LINK = colLabelUtubeLink;
     }
 
+    /**
+     *
+     * @param limit number of videos sync to YouTube
+     * @return a map store the row index as key and video's ID as value
+     * @throws IOException if data not found
+     */
     public Map<Integer, String> pullData(int limit) throws IOException {
         int countVideoUploaded = 0;
-        Map<Integer, String> rowPhotoID = new HashMap<>();
+        Map<Integer, String> videoIDs = new HashMap<>();
         List<List<Object>> rows = sheetPersistence.readValueRange(DATA_RANGES).get(0).getValues();
         for (int i = 0; i < rows.size(); i++) {
             List<Object> row = rows.get(i);
             if (row.size() <= 4) {
                 int rowIndex = ROW_BEGIN_INDEX + i;
-                rowPhotoID.put(rowIndex, row.get(0).toString());
+                videoIDs.put(rowIndex, row.get(0).toString());
             } else
                 countVideoUploaded++;
 
             // valid the limit
-            if (rowPhotoID.size() >= limit)
+            if (videoIDs.size() >= limit)
                 break;
         }
-        logger.info("Videos not yet synced to YouTube {} video. Total videos uploaded: {} video", rowPhotoID.size(), countVideoUploaded);
-        return rowPhotoID;
+        logger.info("Total videos uploaded: {} video. Videos not yet synced to YouTube {} video.", countVideoUploaded, videoIDs.size());
+        return videoIDs;
     }
 
     public void updateStatus(int rowIndex, String youtubeLink) {

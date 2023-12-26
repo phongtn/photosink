@@ -4,6 +4,7 @@ import com.google.protobuf.Timestamp;
 import com.google.type.Date;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class DateTimeUtil {
 
@@ -11,6 +12,12 @@ public class DateTimeUtil {
 
     public static LocalDate now() {
         return LocalDate.now(ZoneId.of(ZONE_ID));
+    }
+
+    public static String nowWithTime() {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of(ZONE_ID));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return formatter.format(localDateTime);
     }
 
     public static LocalDateTime protoTimeStamp2DateTime(Timestamp timestamp) {

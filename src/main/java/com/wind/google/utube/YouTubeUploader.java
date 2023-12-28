@@ -15,8 +15,6 @@ package com.wind.google.utube;
  */
 
 
-import com.google.api.client.googleapis.json.GoogleJsonError;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.googleapis.media.MediaHttpUploader;
 import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
 import com.google.api.client.http.InputStreamContent;
@@ -30,10 +28,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.wind.google.GoogleServiceProvider;
+import util.StreamUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
@@ -45,7 +43,7 @@ import java.util.*;
  *
  * @author Jeremy Walker
  */
-public class YoutubeUploader {
+public class YouTubeUploader {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -58,7 +56,7 @@ public class YoutubeUploader {
     private final YouTube youTube;
 
     @Inject
-    public YoutubeUploader(GoogleServiceProvider apiServiceProvider) {
+    public YouTubeUploader(GoogleServiceProvider apiServiceProvider) {
         this.youTube = apiServiceProvider.initYouTubeClient();
     }
 
@@ -96,17 +94,8 @@ public class YoutubeUploader {
         // network interruption or other transmission failure, saving
         // time and bandwidth in the event of network failures.
         uploader.setDirectUploadEnabled(false);
-
-        MediaHttpUploaderProgressListener progressListener = httpUploader -> {
-            switch (httpUploader.getUploadState()) {
-                case INITIATION_STARTED -> logger.info("Initiation Started");
-                case INITIATION_COMPLETE -> logger.info("Initiation Completed");
-                case MEDIA_IN_PROGRESS -> logger.info("Upload percentage: " + httpUploader.getNumBytesUploaded());
-                case MEDIA_COMPLETE -> logger.info("Upload Completed!");
-                case NOT_STARTED -> logger.info("Upload Not Started!");
-            }
-        };
-        uploader.setProgressListener(progressListener);
+        UploadListener uploadListener = new UploadListener();
+        uploader.setProgressListener(uploadListener);
 
         // Call the API and upload the video.
         Video returnedVideo = videoInsert.execute();

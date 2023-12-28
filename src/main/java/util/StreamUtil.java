@@ -44,8 +44,6 @@ public class StreamUtil {
     /**
      * <a href="https://www.baeldung.com/java-download-file">...</a>
      *
-     * @param fileName
-     * @param fileUrl
      */
     public void downloadFile(String fileName, String fileUrl) throws IOException {
         InputStream in = new URL(fileUrl).openStream();

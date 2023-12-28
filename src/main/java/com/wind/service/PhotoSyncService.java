@@ -5,7 +5,7 @@ import com.google.inject.name.Named;
 import com.wind.google.photos.PhotoService;
 import com.wind.google.photos.PhotosProcessor;
 import com.wind.google.photos.VideoDto;
-import com.wind.google.utube.YoutubeUploader;
+import com.wind.google.utube.YouTubeUploader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,13 +20,13 @@ public class PhotoSyncService {
 
     private final SheetService sheetService;
     private final PhotoService photoService;
-    private final YoutubeUploader youtubeUploader;
+    private final YouTubeUploader youtubeUploader;
     private final int LIMIT_YOUTUBE_UPLOAD_QUOTAS;
 
     @Inject
     public PhotoSyncService(SheetService sheetService,
                             PhotosProcessor photoService,
-                            YoutubeUploader youtubeUploader,
+                            YouTubeUploader youtubeUploader,
                             @Named("number_videos_synced_utube") int limitYoutubeUploadQuotas) {
         this.sheetService = sheetService;
         this.photoService = photoService;

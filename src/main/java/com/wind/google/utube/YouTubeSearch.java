@@ -38,7 +38,7 @@ import java.util.Properties;
  *
  * @author Jeremy Walker
  */
-public class Search {
+public class YouTubeSearch {
 
     /**
      * Define a global variable that identifies the name of a file that
@@ -64,7 +64,7 @@ public class Search {
         // Read the developer key from the properties file.
         Properties properties = new Properties();
         try {
-            InputStream in = Search.class.getResourceAsStream("/" + PROPERTIES_FILENAME);
+            InputStream in = YouTubeSearch.class.getResourceAsStream("/" + PROPERTIES_FILENAME);
             properties.load(in);
 
         } catch (IOException e) {

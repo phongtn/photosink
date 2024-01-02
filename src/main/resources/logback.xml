@@ -20,7 +20,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.wind" level="debug" additivity="false">
+    <logger name="com.wind" level="info" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>

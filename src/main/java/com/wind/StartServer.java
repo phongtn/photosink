@@ -52,8 +52,6 @@ public class StartServer {
             get("sync/photos", ctx -> injector.getInstance(SyncController.class).syncLatestVideo(ctx));
             get("sync/utube", ctx -> injector.getInstance(SyncController.class).syncVideo2Youtube(ctx));
         }));
-
-
     }
 }
 

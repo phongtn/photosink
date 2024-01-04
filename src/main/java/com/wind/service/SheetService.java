@@ -20,7 +20,6 @@ public class SheetService {
     private final int ROW_BEGIN_INDEX;
     private final String DATA_RANGES;
     private final String COL_LABEL_STATUS;
-    private final String COL_LABEL_UTUBE_LINK;
     private final String COL_LABEL_CREATED;
     private static final Logger logger = LoggerFactory.getLogger(SheetService.class.getName());
 
@@ -29,13 +28,11 @@ public class SheetService {
                         @Named("row_begin") int rowBeginIndex,
                         @Named("data_ranges") String dataRanges,
                         @Named("column_status") String colLabelStatus,
-                        @Named("column_link") String colLabelUtubeLink,
                         @Named("column_created_at") String colLabelCreated) {
         this.sheetPersistence = sheetPersistence;
         ROW_BEGIN_INDEX = rowBeginIndex;
         DATA_RANGES = dataRanges;
         COL_LABEL_STATUS = colLabelStatus;
-        COL_LABEL_UTUBE_LINK = colLabelUtubeLink;
         COL_LABEL_CREATED = colLabelCreated;
     }
 
@@ -60,7 +57,8 @@ public class SheetService {
             if (videoIDs.size() >= limit)
                 break;
         }
-        logger.info("\n\tTotal videos uploaded: {} video. \n\tNow we start to sync: {} videos.", countVideoUploaded, videoIDs.size());
+        logger.info("\n\tTotal videos uploaded: {} video. \n\tNow we start to sync: {} videos.",
+                countVideoUploaded, videoIDs.size());
         return videoIDs;
     }
 

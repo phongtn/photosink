@@ -6,10 +6,16 @@ I want to emphasize this is a personal project. That means the high cost is not 
 So, the first priority in choosing a service is lower cost. :) 
 
 ### Services I chose is below:
-1. Cloud Function to call Google Photo APIs
-2. Cloud Run to upload the youtube video
-3. Cloud scheduler to trigger these function at 00:00 AM
-4. Use Google spreadsheet to host video files and Firestore to save Google's Credentials
+1. Cloud Run to upload the youtube video
+2. Cloud scheduler to trigger these function at 00:00 AM
+3. Use Google spreadsheet to host video files 
+4. Google Firestore to save Google's Credentials
+
+### How about the cost?
+1. 20K free invocation and 1GB-month of memory allocation for Cloud Run
+2. For Cloud scheduler Google offer 3 jobs per month are free for the entire Google Cloud account.
+3. Google spreadsheet is completely free.
+4. Google Fire Store offers a free tier with 50K/20K/20K daily queries on Reads/Writes/Deletes. And 1GB of free storage.
 
 ### Guideline for developer
 The following guides illustrate how to use some features concretely:

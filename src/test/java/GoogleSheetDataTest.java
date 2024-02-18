@@ -82,6 +82,28 @@ public class GoogleSheetDataTest {
     }
 
     @Test
+    public void testWriteOtherSheet() {
+        try {
+            String ranges = "trading_log!A2";
+            String cellValueStatus = "DONE";
+
+            List<Object> data = List.of(cellValueStatus, "uri", DateTimeUtil.nowWithTime());
+            UpdateValuesResponse updateResponse = sheetServiceData.updateMultiValue(ranges, data);
+            logger.info("The value update at {}:", updateResponse.getUpdatedRange());
+
+            // Read the recent data updated
+//            List<ValueRange> valueRanges = sheetServiceData.readValueRange(ranges);
+//            ValueRange headTitle = valueRanges.get(0);
+//            String currentValue = headTitle.getValues().get(0).get(0).toString();
+//            logger.info("The current value at {} is {}", updateResponse.getUpdatedRange(), currentValue);
+//            logger.info("{}", currentValue);
+//            assertThat(currentValue, equalTo(cellValueStatus));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     public void testUpdateCellValue() {
         try {
             String ranges = "E2";

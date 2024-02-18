@@ -1,5 +1,6 @@
 package com.wind.service;
 
+import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -78,5 +79,14 @@ public class SheetService {
         ValueRange body = new ValueRange()
                 .setValues(List.of(row));
         sheetPersistence.appendData(body);
+    }
+
+    public void updateTradingLog() {
+        String ranges = "trading_log!A2";
+        String cellValueStatus = "DONE";
+
+        List<Object> data = List.of(cellValueStatus, "uri", DateTimeUtil.nowWithTime());
+        UpdateValuesResponse updateResponse = sheetPersistence.updateMultiValue(ranges, data);
+        logger.info("The value update at {}:", updateResponse.getUpdatedRange());
     }
 }

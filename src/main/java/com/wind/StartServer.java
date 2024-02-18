@@ -11,8 +11,7 @@ import com.wind.module.ServiceModule;
 import io.javalin.http.HttpStatus;
 
 import static io.javalin.Javalin.create;
-import static io.javalin.apibuilder.ApiBuilder.get;
-import static io.javalin.apibuilder.ApiBuilder.path;
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class StartServer {
 
@@ -51,6 +50,7 @@ public class StartServer {
             get("video", ctx -> injector.getInstance(PhotosController.class).findMedia(ctx));
             get("sync/photos", ctx -> injector.getInstance(SyncController.class).syncLatestVideo(ctx));
             get("sync/utube", ctx -> injector.getInstance(SyncController.class).syncVideo2Youtube(ctx));
+            post("sheets/log", ctx -> injector.getInstance(BotLoggingController.class).createLog(ctx));
         }));
     }
 }

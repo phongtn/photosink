@@ -18,7 +18,6 @@ public record PhotosController(PhotoService photoService) {
     }
 
     public void findMedia(Context context) {
-        System.out.println("ok");
         int year = Integer.parseInt(Objects.requireNonNull(context.queryParam("y")));
         int month = Integer.parseInt(Objects.requireNonNull(context.queryParam("m")));
         int day = Integer.parseInt(Objects.requireNonNull(context.queryParam("d")));

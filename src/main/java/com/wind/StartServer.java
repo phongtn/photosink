@@ -39,14 +39,12 @@ public class StartServer {
         app.get("/Callback", userController::callback);
 
         // Private API required access key
-        app.unsafeConfig().router.apiBuilder(() -> {
-            path("private", () -> {
-                get("video", ctx -> injector.getInstance(PhotosController.class).findMedia(ctx));
-                get("sync/photos", ctx -> injector.getInstance(SyncController.class).syncLatestVideo(ctx));
-                get("sync/utube", ctx -> injector.getInstance(SyncController.class).syncVideo2Youtube(ctx));
-                post("sheets/log", ctx -> injector.getInstance(BotLoggingController.class).createLog(ctx));
-            });
-        });
+        app.unsafeConfig().router.apiBuilder(() -> path("private", () -> {
+            get("video", ctx -> injector.getInstance(PhotosController.class).findMedia(ctx));
+            get("sync/photos", ctx -> injector.getInstance(SyncController.class).syncLatestVideo(ctx));
+            get("sync/utube", ctx -> injector.getInstance(SyncController.class).syncVideo2Youtube(ctx));
+            post("sheets/log", ctx -> injector.getInstance(BotLoggingController.class).createLog(ctx));
+        }));
     }
 }
 

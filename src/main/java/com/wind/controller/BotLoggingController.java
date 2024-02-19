@@ -15,6 +15,8 @@ public record BotLoggingController(SheetService service) {
     }
 
     public void createLog(Context context) {
-        service.updateTradingLog();
+        BotLoggingDto botLoggingDto =  context.bodyAsClass(BotLoggingDto.class);
+        logger.info("dto request {}", botLoggingDto);
+//        service.updateTradingLog();
     }
 }

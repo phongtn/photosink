@@ -5,8 +5,6 @@ import com.wind.google.photos.PhotoService;
 import com.wind.google.photos.VideoDto;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -9,12 +9,12 @@ import java.util.stream.IntStream;
 
 public class CommonPoolTest {
 
-    private static Logger logger = LoggerFactory.getLogger(CommonPoolTest.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(CommonPoolTest.class.getName());
 
     public static void main(String[] args) {
-        logger.info("CPU Core: " + Runtime.getRuntime().availableProcessors());
-        logger.info("CommonPool Parallelism: " + ForkJoinPool.commonPool().getParallelism());
-        logger.info("CommonPool Common Parallelism: " + ForkJoinPool.getCommonPoolParallelism());
+        logger.info("CPU Core: {}", Runtime.getRuntime().availableProcessors());
+        logger.info("CommonPool Parallelism: {}", ForkJoinPool.commonPool().getParallelism());
+        logger.info("CommonPool Common Parallelism: {}", ForkJoinPool.getCommonPoolParallelism());
 
         long start = System.nanoTime();
         List<CompletableFuture<Void>> futures = IntStream.range(0, 100)
@@ -22,7 +22,7 @@ public class CommonPoolTest {
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
-        logger.info("Processed in " + Duration.ofNanos(System.nanoTime() - start).toSeconds() + " sec");
+        logger.info("Processed in {} sec", Duration.ofNanos(System.nanoTime() - start).toSeconds());
     }
 
     private static void blockingOperation() {
